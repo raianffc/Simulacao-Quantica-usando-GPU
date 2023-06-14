@@ -393,11 +393,11 @@ int* Fatores( double N, double x, float **R, float **S, int *tamR, int *tamS, in
         for(int j=0; j<3; j++){
             if (S[i][j]==1){ // o valor � um m�ltiplo da ordem
                 printf("testa um divisor da ordem");
-                if(R[i][j]%2==0){
+                if(((int)R[i][j])%2==0){
                     printf("Teste de Shor...");
                     printf(mdc(pow(x,((int)R[i][j]/2),((int)N))-1,N)); //aqui
                 }
-                if(R[i][j]%3==0){
+                if(((int)R[i][j])%3==0){
                     print("Teste com 3 ...");
                     print(mdc(pow(x,((int)R[i][j]/2),)-1,N));//aqui
                 }
