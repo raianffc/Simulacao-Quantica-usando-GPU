@@ -1,6 +1,6 @@
 # Simulacao-Quantica-usando-GPU
 Estou traduzindo o código em Python para linguagem C. Depois irei paralelizar tudo em CUDA.
-Este é um código Python que implementa o algoritmo de Shor para fatoração de números inteiros. Consiste em várias funções que são usadas para executar as diferentes etapas do algoritmo.
+Este é um código que implementa o algoritmo de Shor para fatoração de números inteiros. Consiste em várias funções que são usadas para executar as diferentes etapas do algoritmo.
 
 buscabin(Soma,P,m): Esta função realiza uma busca binária em uma lista de probabilidades para encontrar o índice do primeiro elemento maior ou igual a um determinado número m. É usado para simular uma medição de um estado quântico no algoritmo.
 
