@@ -380,26 +380,31 @@ float **EstimaFator(double N, double x,float **R, int tam){
 
     return Sucesso;
 }
-/*
-int* Fatores(N,x,R,S){
-    fat=set()
-    for i in range(len(S)):
-        for j in range(3):
-            if S[i][j]==1: # o valor � um m�ltiplo da ordem
-                print('testa um divisor da ordem')
-                if R[i][j]%2==0:
-                    print('Teste de Shor...')
-                    print(gcd(pow(x,int(R[i][j]//2),N)-1,N))
-                if R[i][j]%3==0:
-                    print('Teste com 3 ...')
-                    print(gcd(pow(x,int(R[i][j]//3),)-1,N))
-            elif S[i][j]==2:   # o valor � um divisor da ordem que encontra um fator
-                f=gcd(pow(x,int(R[i][j]),N)-1,N)
-                fat.add(f)
-                fat.add(N//f)
+
+int* Fatores( double N, double x, float **R, float **S, int *tamR, int *tamS){
+    int *fat;
+    for (int i=0; i<*tamS; i++){
+        for(int j=0; j<3; j++){
+            if (S[i][j]==1:){ # o valor � um m�ltiplo da ordem
+                printf("testa um divisor da ordem");
+                if (R[i][j]%2==0:){
+                    printf("Teste de Shor...");
+                    printf(mdc(pow(x,int(R[i][j]/2),N)-1,N)); //aqui
+                }
+                if (R[i][j]%3==0){
+                    print("Teste com 3 ...");
+                    print(mdc(pow(x,int(R[i][j]/3),)-1,N));//aqui
+                }
+            }
+            else if (S[i][j]==2){   # o valor e um divisor da ordem que encontra um fator
+                f=mdc(pow(x,int(R[i][j]),N)-1,N);//aqui
+                //Minha outra dúvida seria como fazer essa lista fat ser imutavel que nem o Python faz usando set que é uma coleção
+                fat.add(f);
+                fat.add(N/f);
+     	 	}
     return fat
 }
-*/
+
 int main(){
     int p1 = 5;
     int p2 = 3;
@@ -421,7 +426,7 @@ int main(){
         printf("%.0f ", result[i]);
     }
     printf("]\n");
-    int **R = EstimaOrdem(r, result, &tamR);
+    float **R = EstimaOrdem(r, result, &tamR);
     /*int **S = EstimaFator(N, x, R, tam);
     printf("[");
    /* for(int i=0; i<n;i++){
