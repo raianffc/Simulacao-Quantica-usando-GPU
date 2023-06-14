@@ -2,6 +2,23 @@
 #include<stdlib.h>
 #include<math.h>
 #include<time.h>
+int mdc(int num1, int num2) {
+    int resto;
+    do {
+        resto = num1 % num2;
+        num1 = num2;
+        num2 = resto;
+    } while (resto != 0);
+    return num1;
+}
+
+int mmc(int num1, int num2) {
+    int resto, a;
+    if(num2==0) return num1;
+    a = mdc(num1,num2);
+    return (num1 * num2) / a;
+    
+}
 float buscabin(float *Soma, float *P, int m, int tam) {
     if( tam == 0)
         return 0;
@@ -32,23 +49,7 @@ float buscabin(float *Soma, float *P, int m, int tam) {
         }
     }
 }
-int mdc(int num1, int num2) {
-    int resto;
-    do {
-        resto = num1 % num2;
-        num1 = num2;
-        num2 = resto;
-    } while (resto != 0);
-    return num1;
-}
 
-int mmc(int num1, int num2) {
-    int resto, a;
-    if(num2==0) return num1;
-    a = mdc(num1,num2);
-    return (num1 * num2) / a;
-    
-}
 double* FracCont(double x, double q, double N, int *tamL) {
     int tam = 1;
     double x_inic = x;
@@ -223,7 +224,7 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
         total = total + Z[pos+1];
         Soma[2*i+1] = total;
     }
-    P[2*(((int)r)-1)]=-1*(int)(random()*q);
+    P[2*(((int)r)-1)]=-1*(int)((random()%101)*q);
     Soma[2*(((int)r)-1)]=1;
     
     return r;
@@ -238,7 +239,7 @@ double *Simula(float *Soma,float *P, int n, int *tamSoma){
         result[i]=0;
     }
      for(i = 0; i<n; i++){
-        float m=(rand()/(float)RAND_MAX);
+        float m=((random()%101)/(float)RAND_MAX);
         result[i] = buscabin(Soma,P,m, *tamSoma);
         if (result[i]==0)
             result[i] = 1;
@@ -266,6 +267,13 @@ float **EstimaOrdem(double r,double *result,double q, double N, int *tamresult){
     }
     return R;
 }
+
+//0 - não é múltiplo e nem divisor da ordem que distinga fator
+// 1 - múltiplo da ordem
+// 2 - distingue fator
+// 4 - mmc múltiplo da ordem (acumulada)
+// 8 - mmc distingue fator
+
 float **EstimaFator(double N, double x,float **R, int tam){
     printf("Procura um multiplo da ordem ou um divisor que distiga um fator nao trivial.\n");
     float **Sucesso;
