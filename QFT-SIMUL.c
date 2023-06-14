@@ -347,7 +347,7 @@ float **EstimaFator(double N, double x,float **R, int tam){
         for(int j=0; j<3; j++){
             double x1=(double)x;
             double R1=(double)R[i][j];
-            pot=(((int)(pow(x1,R1)))%N);
+            pot=(((int)(pow(x1,R1)))%((int)N));
              if (pot==1){
                 sucesso[j]=1;
                 printf("multiplo de r\n");
@@ -360,7 +360,7 @@ float **EstimaFator(double N, double x,float **R, int tam){
                 }
             }
             potTotal = potTotal*pot;
-            if(potTotal%N==1){
+            if(potTotal%((int)N)==1){
                 sucesso[j]=sucesso[j]+4;
                 printf("fatores do múltiplo da ordem %d %d\n",pot,(potTotal/pot));
             }
@@ -371,7 +371,7 @@ float **EstimaFator(double N, double x,float **R, int tam){
                     printf("valor de sucesso: %d\n",sucesso[j]);
                 }
             }
-            potTotal = potTotal%N;
+            potTotal = potTotal%((int)N);
             //printf("potTotal: %d", potTotal);
             Sucesso[i][j]=sucesso[j];
         }
@@ -381,28 +381,38 @@ float **EstimaFator(double N, double x,float **R, int tam){
     return Sucesso;
 }
 
-int* Fatores( double N, double x, float **R, float **S, int *tamR, int *tamS){
+int* Fatores( double N, double x, float **R, float **S, int *tamR, int *tamS, int *k){
     int *fat;
+    fat = (float*)malloc((*k)*sizeof(int));
+    int f;
+    if(fat==NULL){ 
+    	printf("error");
+    	exit(1);
+    }
     for (int i=0; i<*tamS; i++){
         for(int j=0; j<3; j++){
-            if (S[i][j]==1:){ # o valor � um m�ltiplo da ordem
+            if (S[i][j]==1){ // o valor � um m�ltiplo da ordem
                 printf("testa um divisor da ordem");
-                if (R[i][j]%2==0:){
+                if(R[i][j]%2==0){
                     printf("Teste de Shor...");
-                    printf(mdc(pow(x,int(R[i][j]/2),N)-1,N)); //aqui
+                    printf(mdc(pow(x,((int)R[i][j]/2),((int)N))-1,N)); //aqui
                 }
-                if (R[i][j]%3==0){
+                if(R[i][j]%3==0){
                     print("Teste com 3 ...");
-                    print(mdc(pow(x,int(R[i][j]/3),)-1,N));//aqui
+                    print(mdc(pow(x,((int)R[i][j]/2),)-1,N));//aqui
                 }
             }
-            else if (S[i][j]==2){   # o valor e um divisor da ordem que encontra um fator
-                f=mdc(pow(x,int(R[i][j]),N)-1,N);//aqui
+            else if (S[i][j]==2){   // o valor e um divisor da ordem que encontra um fator
+                f=mdc(pow(x,((int)R[i][j]/2),N)-1,N);//aqui
                 //Minha outra dúvida seria como fazer essa lista fat ser imutavel que nem o Python faz usando set que é uma coleção
-                fat.add(f);
-                fat.add(N/f);
+		        fat[(*k)-1]=f;
+		        *k=(*k)+2;
+		        fat=realloc(fat, (*k) * sizeof(int));
+                fat[(*k)-2]=(int)(N/f);
      	 	}
-    return fat
+        }
+    }
+    return fat;
 }
 
 int main(){
@@ -415,9 +425,9 @@ int main(){
     int n  = 15;// quantidade de valores medidos
     int tamS=1;
     int tamR;
-
+    int k=1;
     /*Soma,P,r=Prepara(N,x,r,q);
-     #print("sum",Soma)*/
+     #print("sum",Soma)
     float *result=Simula(Soma, P, n);
     printf("q= %d\n",q);
     printf("\nResultados medidos na rotina quantica do QOFA:\n");
@@ -426,17 +436,8 @@ int main(){
         printf("%.0f ", result[i]);
     }
     printf("]\n");
-    float **R = EstimaOrdem(r, result, &tamR);
-    /*int **S = EstimaFator(N, x, R, tam);
-    printf("[");
-   /* for(int i=0; i<n;i++){
-        for(int j=0; j<n;j++)
-        printf("%d ", S[i][j]);
-    }
-    printf("]\n");*/
 
-    //int fat = Fatores(N,x,R,S);
-
+*/
 
     return 0;
 }
