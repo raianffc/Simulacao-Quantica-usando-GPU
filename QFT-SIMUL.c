@@ -156,6 +156,7 @@ double** Frac(double *L, int *tamL) {
     free(L);
     return F;
 }
+/*
 float Prepara(float N, float x, float r, float q, float *P, float *Soma){
     r=0;
     q=1;
@@ -294,18 +295,18 @@ float Prepara(float N, float x, float r, float q, float *P, float *Soma){
     printf("Probabilidade Acumulada (dos picos): %f",total);
 
     return r;
-}
-float *Simula(float *Soma,float *P, int n){
+}*/
+double *Simula(float *Soma,float *P, int n, int *tamSoma){
     int i;
     printf("\nSimula medicao:\n");
-    float *result;
-    result=(float*)malloc(n*sizeof(float));
+    double *result;
+    result=(double*)malloc(n*sizeof(double));
     for(i = 0; i<n; i++){
         result[i]=0;
     }
      for(i = 0; i<n; i++){
         float m=(rand()/(float)RAND_MAX);
-        result[i] = buscabin(Soma,P,m, (sizeof(Soma)/sizeof(float)));
+        result[i] = buscabin(Soma,P,m, *tamSoma);
         if (result[i]==0)
             result[i] = 1;
      }
@@ -332,9 +333,9 @@ float **EstimaOrdem(double r,double *result,double q, double N, int *tamresult){
     }
     return R;
 }
-int **EstimaFator(int N, int x,int **R, int tam){
+float **EstimaFator(double N, double x,float **R, int tam){
     printf("Procura um multiplo da ordem ou um divisor que distiga um fator nao trivial.\n");
-    int **Sucesso;
+    float **Sucesso;
     int potTotal=1;
     int pot;
     Sucesso=malloc(tam*sizeof(int));
@@ -342,7 +343,7 @@ int **EstimaFator(int N, int x,int **R, int tam){
         Sucesso[i]=malloc(3*sizeof(int));
     }
     for(int i = 0; i<tam; i++){
-        int sucesso[3]={0,0,0};
+        float sucesso[3]={0,0,0};
         for(int j=0; j<3; j++){
             double x1=(double)x;
             double R1=(double)R[i][j];
