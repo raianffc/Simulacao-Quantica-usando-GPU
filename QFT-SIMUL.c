@@ -157,7 +157,7 @@ double** Frac(double *L, int *tamL) {
     return F;
 }
 /*
-float Prepara(float N, float x, float r, float q, float *P, float *Soma){
+double Prepara(double N, double x, double r, double q, float *Soma,float *P, int *tamS, int *tamP){
     r=0;
     q=1;
     int i;
@@ -177,7 +177,7 @@ float Prepara(float N, float x, float r, float q, float *P, float *Soma){
             i++;
         }
         r = i;
-        printf("Ordem r n�o informada. Ordem r calculada: %f",r);
+        printf("Ordem r nao informada. Ordem r calculada: %f",r);
     }
     else{
         printf("Ordem r informada: %f",r);
@@ -192,79 +192,19 @@ float Prepara(float N, float x, float r, float q, float *P, float *Soma){
     int cont =0;
     while (j <= q){
         Z[j] = 1;
-        j += r;
-        cont += 1;  //# em principio, nao e usado. Mas poderia ser usado para normalizar o vetor de estado
+        j = j +((int)r);
+        cont ++;  //# em principio, nao e usado. Mas poderia ser usado para normalizar o vetor de estado
     }
 //   print(cont)
+
     //h=cupy.fft.fft(Z)
     //fft_prob(Z,h,Z)
+
 //    mostraQFT(Z)
 
     printf("Criando Soma com probabilidade acumulada");
-    P=malloc((2*r+1)*sizeof(float));
-    for(int i=0;i<(2*r+1);i++){
-        P[i]=0;
-    }
-    Soma=malloc((2*r+1)*sizeof(float));
-    for(int i=0;i<(2*r+1);i++){
-        Soma[i]=0;
-    }
-    float k = q/r;
-    printf("Calculando Somas...");
-    float total = 0;
-    for (int i=0;i<r;i++){
-        int pos = (int)(i*k);
-        P[2*i] = pos;
-        total =total+ Z[pos];
-        Soma[2*i]= total;
-        P[2*i+1]= pos+1;
-        total = total + Z[pos+1];
-        Soma[2*i+1] = total;float Prepara(float N, float x, float r, float q, float *P, float *Soma){
-    r=0;
-    q=1;
-    int i;
-    float s;
- //colocar o valor de r caso seja conhecido (evita o calculo abaixo)
-    int tamN = (int)(log2(N));
-    float q1 = pow(2,(2*tamN));    // este � o valor ideal segundo Shor. N�o � usado no programa. Serve apenas de refer�ncia
-    print("valor ideal para q:",q1);
-    if(q < N)
-        q = 1 << (tamN+4); // bitwise deslocamento s esquerda
-    if (r==0){
-        s=x;
-        i=1;
-
-        while (s > 1){
-            s = ((int)(s*x))%((int)N);
-            i++;
-        }
-        r = i;
-        printf("Ordem r n�o informada. Ordem r calculada: %f",r);
-    }
-    else{
-        printf("Ordem r informada: %f",r);
-    }
-    printf("Criando Z...");
-    float *Z;
-    Z= malloc(q*sizeof(float));
-    for(int i=0;i<q;i++){
-        Z[i]=0;
-    }
-    int j = 1;
-    int cont =0;
-    while (j <= q){
-        Z[j] = 1;
-        j += r;
-        cont += 1;  //# em principio, nao e usado. Mas poderia ser usado para normalizar o vetor de estado
-    }
-//   print(cont)
-    //h=cupy.fft.fft(Z)
-    //fft_prob(Z,h,Z)
-//    mostraQFT(Z)
-
-    printf("Criando Soma com probabilidade acumulada");
-    P=malloc((2*r+1)*sizeof(float));
-    for(int i=0;i<(2*r+1);i++){
+    P=malloc((2*(r+1))*sizeof(float));
+    for(int i=0;i<(2*(r+1));i++){
         P[i]=0;
     }
     Soma=malloc((2*r+1)*sizeof(float));
@@ -283,18 +223,11 @@ float Prepara(float N, float x, float r, float q, float *P, float *Soma){
         total = total + Z[pos+1];
         Soma[2*i+1] = total;
     }
-    P[2*r-1]=-1*(int)(random()*q)
-    Soma[((int)2*r-1)]=1;
-    printf("Probabilidade Acumulada (dos picos): %f",total);
-
+    P[2*(((int)r)-1)]=-1*(int)(random()*q);
+    Soma[2*(((int)r)-1)]=1;
+    
     return r;
-}
-    }
-    P[2*r-1]=-1*(int)(random()*q)
-    Soma[((int)2*r-1)]=1;
-    printf("Probabilidade Acumulada (dos picos): %f",total);
-
-    return r;
+    
 }*/
 double *Simula(float *Soma,float *P, int n, int *tamSoma){
     int i;
@@ -391,7 +324,7 @@ int* Fatores( double N, double x, float **R, float **S, int *tamR, int *tamS, in
     }
     for (int i=0; i<*tamS; i++){
         for(int j=0; j<3; j++){
-            if (S[i][j]==1){ // o valor � um m�ltiplo da ordem
+            if (S[i][j]==1){ // o valor � um multiplo da ordem
                 printf("testa um divisor da ordem");
                 if(((int)R[i][j])%2==0){
                     printf("Teste de Shor...");
@@ -416,12 +349,12 @@ int* Fatores( double N, double x, float **R, float **S, int *tamR, int *tamS, in
 }
 
 int main(){
-    int p1 = 5;
-    int p2 = 3;
-    int N  = p1 * p2; //N n�o precisa ser semi-primo
-    int x  = 2;
-    int r  = 0;
-    int q  = 1024*1024;//2**20
+    double p1 = 29;
+    double p2 = 31;
+    double N  = p1 * p2; //N n�o precisa ser semi-primo
+    double x  = 6440;
+    double r  = 0;
+    double q  = 1024*1024;//2**20
     int n  = 15;// quantidade de valores medidos
     int tamS=1;
     int tamR;
