@@ -2,6 +2,34 @@
 #include<stdlib.h>
 #include<math.h>
 #include<time.h>
+#include<complex.h>
+#define PI 3.14159265358979323846
+
+void ifft(double complex *x, int N) {
+    if (N <= 1)
+        return;
+
+    double complex *even = malloc(N / 2 * sizeof(double complex));
+    double complex *odd = malloc(N / 2 * sizeof(double complex));
+
+    for (int i = 0; i < N / 2; i++) {
+        even[i] = x[2 * i];
+        odd[i] = x[2 * i + 1];
+    }
+
+    ifft(even, N / 2);
+    ifft(odd, N / 2);
+
+    for (int k = 0; k < N / 2; k++) {
+        double complex t = cexp(-I * 2 * PI * k / N) * odd[k];
+        x[k] = even[k] + t;
+        x[k + N / 2] = even[k] - t;
+    }
+
+    free(even);
+    free(odd);
+}
+
 int mdc(int num1, int num2) {
     int resto;
     do {
@@ -121,7 +149,7 @@ double** Frac(double *L, int *tamL) {
     for (int i = 0; i < 2; i++) {
         F[i] = malloc((tamF) * sizeof(double));
         if (F[i] == NULL) {
-            printf("Erro na alocacao de memoria.");
+            printf("\nErro na alocacao de memoria.\n");
             exit(1);
         }
     }
@@ -149,7 +177,6 @@ double** Frac(double *L, int *tamL) {
     for(int j=3;j<tamF;j++){
         total = mmc(total,(int)F[1][j]);
     }
-    printf("total: %d\n", total);
     F[1][0]=(double)total;
     if(F[1][0]==0 && *tamL==1){
         printf("\nFracao inexistente: %f \n", L[0]);
@@ -157,7 +184,6 @@ double** Frac(double *L, int *tamL) {
     free(L);
     return F;
 }
-/*
 double Prepara(double N, double x, double r, double q, float *Soma,float *P, int *tamS, int *tamP){
     r=0;
     q=1;
@@ -166,7 +192,7 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
  //colocar o valor de r caso seja conhecido (evita o calculo abaixo)
     int tamN = (int)(log2(N));
     float q1 = pow(2,(2*tamN));    // este � o valor ideal segundo Shor. N�o � usado no programa. Serve apenas de refer�ncia
-    print("valor ideal para q:",q1);
+    printf("\nvalor ideal para q: %f\n",q1);
     if(q < N)
         q = 1 << (tamN+4); // bitwise deslocamento s esquerda
     if (r==0){
@@ -178,14 +204,14 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
             i++;
         }
         r = i;
-        printf("Ordem r nao informada. Ordem r calculada: %f",r);
+        printf("\nOrdem r nao informada. Ordem r calculada: %f\n",r);
     }
     else{
-        printf("Ordem r informada: %f",r);
+        printf("\nOrdem r informada: %f\n",r);
     }
-    printf("Criando Z...");
-    float *Z;
-    Z= malloc(q*sizeof(float));
+    printf("\nCriando Z...\n");
+    double complex *Z;
+    Z= malloc(q*sizeof(double complex));
     for(int i=0;i<q;i++){
         Z[i]=0;
     }
@@ -196,10 +222,35 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
         j = j +((int)r);
         cont ++;  //# em principio, nao e usado. Mas poderia ser usado para normalizar o vetor de estado
     }
+    /*printf("[");
+    for(int i=0; i<q;i++){
+        printf("%.1f \n", creal(Z[i]));
+    }
+    printf("]\n");*/
 //   print(cont)
+    printf("Calculando FFT...");
+    double soma=0;
+    ifft(Z, (int)N);
+    /*printf("[");
+    for(int i=0; i<q;i++){
+        printf("%.1f \n", creal(Z[i]));
+    }
+    printf("]\n");*/
 
-    //h=cupy.fft.fft(Z)
-    //fft_prob(Z,h,Z)
+    printf("Calculando probabilidades...");
+    for(int i=0; i<q; i++){
+        Z[i] = abs(Z[i]*Z[i]);
+        soma = soma + Z[i];
+    }
+    printf("\nsoma = %f\n", soma);
+    for(int i=0; i<q; i++){
+        Z[i] = Z[i]/soma; //normalizando vetor ??
+    }
+    /*printf("[");
+    for(int i=0; i<q;i++){
+        printf("%.1f \n", creal(Z[i]));
+    }
+    printf("]\n");*/
 
 //    mostraQFT(Z)
 
@@ -229,7 +280,7 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
     
     return r;
     
-}*/
+}
 double *Simula(float *Soma,float *P, int n, int *tamSoma){
     int i;
     printf("\nSimula medicao:\n");
@@ -246,16 +297,16 @@ double *Simula(float *Soma,float *P, int n, int *tamSoma){
      }
     return result;
 }
-float **EstimaOrdem(double r,double *result,double q, double N, int *tamresult){
+float **EstimaOrdem(double r,double *result,double q, double N, int n){
     int mult = 0;
     float **R;
     int taml = 1;
-    R=malloc(*tamresult*sizeof(float*));
-    for(int i=0;i<*tamresult;i++){
+    R=malloc(n*sizeof(float*));
+    for(int i=0;i<n;i++){
         R[i]=malloc(3*sizeof(float));
     }
-    printf("Tenta estimar a ordem r=ord(x,N) ou multiplo ou divisor dela para extrair os fatores de N\n");
-    for (int i=0;i<*tamresult;i++){
+    printf("\nTenta estimar a ordem r=ord(x,N) ou multiplo ou divisor dela para extrair os fatores de N\n");
+    for (int i=0;i<n;i++){
         for(double j =-1; j<2; j++){
             printf(". ");
             double *l = FracCont(result[i]+j,q,N, &taml);
@@ -275,7 +326,7 @@ float **EstimaOrdem(double r,double *result,double q, double N, int *tamresult){
 // 8 - mmc distingue fator
 
 float **EstimaFator(double N, double x,float **R, int tam){
-    printf("Procura um multiplo da ordem ou um divisor que distiga um fator nao trivial.\n");
+    printf("\nProcura um multiplo da ordem ou um divisor que distiga um fator nao trivial.\n");
     float **Sucesso;
     int potTotal=1;
     int pot;
@@ -291,25 +342,25 @@ float **EstimaFator(double N, double x,float **R, int tam){
             pot=(((int)(pow(x1,R1)))%((int)N));
              if (pot==1){
                 sucesso[j]=1;
-                printf("multiplo de r\n");
+                printf("\nmultiplo de r\n");
             }
             else{
                 int d=mdc(pot-1,N);
                 if (d > 1){
                     sucesso[j]=2;
-                    printf("fator: %d\n",d);
+                    printf("\nfator: %d\n",d);
                 }
             }
             potTotal = potTotal*pot;
             if(potTotal%((int)N)==1){
                 sucesso[j]=sucesso[j]+4;
-                printf("fatores do múltiplo da ordem %d %d\n",pot,(potTotal/pot));
+                printf("\nfatores do múltiplo da ordem %d %d\n",pot,(potTotal/pot));
             }
             else{
                 int d=mdc((potTotal-1),N);
                 if (d > 1){
                     sucesso[j]=sucesso[j]+8;
-                    printf("valor de sucesso: %d\n",sucesso[j]);
+                    printf("\nvalor de sucesso: %f\n",sucesso[j]);
                 }
             }
             potTotal = potTotal%((int)N);
@@ -321,21 +372,21 @@ float **EstimaFator(double N, double x,float **R, int tam){
 
     return Sucesso;
 }
-
+/*
 int* Fatores( double N, double x, float **R, float **S, int *tamR, int *tamS, int *k){
     int *fat;
     fat = (float*)malloc((*k)*sizeof(int));
     int f;
     if(fat==NULL){ 
-    	printf("error");
+    	printf("\nerror\n");
     	exit(1);
     }
     for (int i=0; i<*tamS; i++){
         for(int j=0; j<3; j++){
             if (S[i][j]==1){ // o valor � um multiplo da ordem
-                printf("testa um divisor da ordem");
+                printf("\ntesta um divisor da ordem\n");
                 if(((int)R[i][j])%2==0){
-                    printf("Teste de Shor...");
+                    printf("\nTeste de Shor...\n");
                     printf(mdc(pow(x,((int)R[i][j]/2),((int)N))-1,N)); //aqui
                 }
                 if(((int)R[i][j])%3==0){
@@ -355,7 +406,7 @@ int* Fatores( double N, double x, float **R, float **S, int *tamR, int *tamS, in
     }
     return fat;
 }
-
+*/
 int main(){
     double p1 = 29;
     double p2 = 31;
@@ -363,14 +414,21 @@ int main(){
     double x  = 6440;
     double r  = 0;
     double q  = 1024*1024;//2**20
-    int n  = 15;// quantidade de valores medidos
-    int tamS=1;
-    int tamR;
+    int n  = 15;// quantidade de valores medidos 
+    float *Soma;
+    int tamSoma;
+    float *P; 
+    int tamP;
+    double *result;
+    float **R;
+    float **S;
+    int *fat;
     int k=1;
-    /*Soma,P,r=Prepara(N,x,r,q);
-     #print("sum",Soma)
-    float *result=Simula(Soma, P, n);
-    printf("q= %d\n",q);
+    
+    
+    r = Prepara(N, x, r, q,Soma, P, &tamSoma, &tamP);
+    result = Simula(Soma, P, n, &tamSoma);
+    printf("\nq= %f\n",q);
     printf("\nResultados medidos na rotina quantica do QOFA:\n");
     printf("[");
     for(int i=0; i<n;i++){
@@ -378,7 +436,12 @@ int main(){
     }
     printf("]\n");
 
-*/
+    R= EstimaOrdem(r, result, q, N, n);
 
+    S = EstimaFator(N, x, R, n);
+
+    //fat = Fatores(N, x, R, S, n, n, &k);
+    //print("Tamanho de k e %d", k);
+    
     return 0;
 }

@@ -38,7 +38,7 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
  //colocar o valor de r caso seja conhecido (evita o calculo abaixo)
     int tamN = (int)(log2(N));
     float q1 = pow(2,(2*tamN));    // este � o valor ideal segundo Shor. N�o � usado no programa. Serve apenas de refer�ncia
-    printf("valor ideal para q: %f",q1);
+    printf("\nvalor ideal para q: %.0f\n",q1);
     if(q < N)
         q = 1 << (tamN+4); // bitwise deslocamento s esquerda
     if (r==0){
@@ -50,12 +50,12 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
             i++;
         }
         r = i;
-        printf("Ordem r nao informada. Ordem r calculada: %f",r);
+        printf("\nOrdem r nao informada. Ordem r calculada: %f\n",r);
     }
     else{
-        printf("Ordem r informada: %f",r);
+        printf("\nOrdem r informada: %f\n",r);
     }
-    printf("Criando Z...");
+    printf("\nCriando Z...\n");
     double complex *Z;
     Z= malloc(q*sizeof(double complex));
     for(int i=0;i<q;i++){
@@ -69,13 +69,34 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
         cont ++;  //# em principio, nao e usado. Mas poderia ser usado para normalizar o vetor de estado
     }
 //   print(cont)
+    printf("\nCalculando FFT...\n");
+    double soma=0;
+    ifft(Z, (int)q);
+    /*printf("[");
+    for(int i=0; i<q;i++){
+        printf("%.1f \n", creal(Z[i]));
+    }
+    printf("]\n");*/
 
-    ifft(Z, (int)N);
-    
+    printf("\nCalculando probabilidades...\n");
+    for(int i=0; i<q; i++){
+        Z[i] = abs(Z[i]*Z[i]);
+        soma = soma + Z[i];
+    }
+    printf("\nsoma = %f\n", soma);
+    for(int i=0; i<q; i++){
+        Z[i] = Z[i]/soma; //normalizando vetor ??
+    }
+    /*printf("[");
+    for(int i=0; i<q;i++){
+        printf("%.1f \n", creal(Z[i]));
+    }
+    printf("]\n");*/
+
 
 //    mostraQFT(Z)
 
-    printf("Criando Soma com probabilidade acumulada");
+    printf("\nCriando Soma com probabilidade acumulada\n");
     P=malloc((2*(r+1))*sizeof(float));
     for(int i=0;i<(2*(r+1));i++){
         P[i]=0;
@@ -85,8 +106,8 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
         Soma[i]=0;
     }
     float k = q/r;
-    printf("Calculando Somas...");
-    float total = 0;
+    printf("\nCalculando Somas...\n");
+    double total = 0;
     for (int i=0;i<r;i++){
         int pos = (int)(i*k);
         P[2*i] = pos;
@@ -98,7 +119,8 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
     }
     P[2*(((int)r)-1)]=-1*(int)((random()%101)*q);
     Soma[2*(((int)r)-1)]=1;
-    
+    printf("\nProbabilidade Acumulada (dos picos): %f \n",total);
+
     return r;
     
 }
