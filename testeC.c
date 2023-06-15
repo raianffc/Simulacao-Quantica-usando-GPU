@@ -38,7 +38,7 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
  //colocar o valor de r caso seja conhecido (evita o calculo abaixo)
     int tamN = (int)(log2(N));
     float q1 = pow(2,(2*tamN));    // este � o valor ideal segundo Shor. N�o � usado no programa. Serve apenas de refer�ncia
-    print("valor ideal para q:",q1);
+    printf("valor ideal para q: %f",q1);
     if(q < N)
         q = 1 << (tamN+4); // bitwise deslocamento s esquerda
     if (r==0){
@@ -56,8 +56,8 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
         printf("Ordem r informada: %f",r);
     }
     printf("Criando Z...");
-    float *Z;
-    Z= malloc(q*sizeof(float));
+    double complex *Z;
+    Z= malloc(q*sizeof(double complex));
     for(int i=0;i<q;i++){
         Z[i]=0;
     }
@@ -115,6 +115,6 @@ int main(){
     float *P; 
     int tamP;
     r = Prepara(N, x, r, q,Soma, P, &tamS, &tamP);
-
+    printf("%f", r);
     return 0;
 }
