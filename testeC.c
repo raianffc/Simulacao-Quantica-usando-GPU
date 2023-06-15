@@ -29,7 +29,7 @@ void ifft(double complex *x, int N) {
     free(even);
     free(odd);
 }
-
+/*
 double Prepara(double N, double x, double r, double q, float *Soma,float *P, int *tamS, int *tamP){
     r=0;
     q=1;
@@ -76,7 +76,7 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
     for(int i=0; i<q;i++){
         printf("%.1f \n", creal(Z[i]));
     }
-    printf("]\n");*/
+    printf("]\n");
 
     printf("\nCalculando probabilidades...\n");
     for(int i=0; i<q; i++){
@@ -91,7 +91,7 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
     for(int i=0; i<q;i++){
         printf("%.1f \n", creal(Z[i]));
     }
-    printf("]\n");*/
+    printf("]\n");
 
 
 //    mostraQFT(Z)
@@ -123,7 +123,7 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
 
     return r;
     
-}
+}*/
 int main(){
     double p1 = 29;
     double p2 = 31;
@@ -136,7 +136,38 @@ int main(){
     int tamS;
     float *P; 
     int tamP;
-    r = Prepara(N, x, r, q,Soma, P, &tamS, &tamP);
-    printf("%f", r);
+    //r = Prepara(N, x, r, q,Soma, P, &tamS, &tamP);
+   // printf("%f", r);
+    
+    double complex Z[14] = {1,0,1,0,1,0,1,0,1,0,1,1,1,0};
+    ifft(Z, 14);
+    printf("%.8f% + .7fi ", creal(Z[0]), cimag(Z[0]));
+    /*
+    printf("[");
+    for(int i=0; i<q;i++){
+        printf("%f% + fi ", creal(Z[i]), cimag(Z[i]));
+    }
+    printf("]\n");*/
+    double Y[14];   
+    printf("\nPassa aqui...\n");
+    double soma=0;
+    for(int i=0; i<14;i++){
+    Y[i] = (double)(Z[i]*Z[i]);
+    Y[i]=abs(Y[i]);
+    soma = soma +(Y[i]);
+    printf("\nPassa aqui 2...\n");
+    }
+    printf("Soma: %f\n", soma);
+    for(int i=0; i<14;i++){
+        Y[i]=Y[i]/soma;
+    }
+    printf("\nPassa aqui 3...\n");
+    printf("[");
+    for(int i=0; i<14;i++){
+        printf("%f ", Y[i]);
+    }
+    printf("]\n");    
+
+    
     return 0;
 }
