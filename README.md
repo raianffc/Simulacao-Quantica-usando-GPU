@@ -1,4 +1,4 @@
-# Simulação de computadores Quânticos usando GPU
+# Simulação de Computadores Quânticos usando GPU
 Estou traduzindo o código em Python para linguagem C. Depois irei paralelizar tudo em CUDA.
 Este é um código que implementa o algoritmo de Shor para fatoração de números inteiros. Consiste em várias funções que são usadas para executar as diferentes etapas do algoritmo.
 
