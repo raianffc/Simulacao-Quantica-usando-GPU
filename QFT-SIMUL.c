@@ -185,10 +185,8 @@ double** Frac(double *L, int *tamL) {
     return F;
 }
 double Prepara(double N, double x, double r, double q, float *Soma,float *P, int *tamS, int *tamP){
-    r=0;
-    q=1;
     int i;
-    float s;
+    double s;
  //colocar o valor de r caso seja conhecido (evita o calculo abaixo)
     int tamN = (int)(log2(N));
     float q1 = pow(2,(2*tamN));    // este � o valor ideal segundo Shor. N�o � usado no programa. Serve apenas de refer�ncia
