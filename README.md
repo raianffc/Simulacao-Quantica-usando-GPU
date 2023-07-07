@@ -17,7 +17,10 @@ EstimaOrdem(r,result): Esta função pega a ordem r de x módulo N e uma lista d
 O algoritmo principal não está incluído no código e precisaria ser implementado separadamente. Isso envolveria chamar essas funções na ordem apropriada para executar a parte quântica do algoritmo, seguida pelo pós-processamento clássico dos resultados da medição para obter os fatores de N.
 
 Sites sobre a biblioteca Complex.h 
+
 https://learn.microsoft.com/pt-br/cpp/standard-library/complex?view=msvc-170
+
 https://acervolima.com/arquivo-de-cabecalho-complex-h-em-c-com-exemplos/
+
 https://www.geeksforgeeks.org/complex-h-header-file-in-c-with-examples/
 Normalizar o vetor esta sendo um problema. Não consigo tirar elevar o quadrado para tirar o conjugado.
