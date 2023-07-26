@@ -24,4 +24,6 @@ https://acervolima.com/arquivo-de-cabecalho-complex-h-em-c-com-exemplos/
 
 https://www.geeksforgeeks.org/complex-h-header-file-in-c-with-examples/
 
+https://www.inf.ufpr.br/roberto/ci067/18_casting.html
+
 Normalizar o vetor esta sendo um problema. Não consigo tirar elevar o quadrado para tirar o conjugado.
