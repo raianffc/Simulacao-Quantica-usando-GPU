@@ -26,4 +26,15 @@ https://www.geeksforgeeks.org/complex-h-header-file-in-c-with-examples/
 
 https://www.inf.ufpr.br/roberto/ci067/18_casting.html
 
+https://www.codeproject.com/Articles/9388/How-to-implement-the-FFT-algorithm
+
+https://www.katjaas.nl/FFTimplement/FFTimplement.html
+
+Agora para que o código seja mais otimizado usaremos o FFTW uma biblioteca feito por pesquisadores do MIT.
+
+https://www.fftw.org/
+
+Biblioteca ja instalada, vendo como usar IFFT.
+Tive problemas com algoritimo em sim. por termos uma lista, mesmo que unidimensional, muito grande e demorava muito para executar. Perdendo o próposito do projeto.
+
 Normalizar o vetor esta sendo um problema. Não consigo tirar elevar o quadrado para tirar o conjugado.
