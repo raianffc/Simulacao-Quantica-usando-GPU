@@ -35,7 +35,7 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
     double s;
  //colocar o valor de r caso seja conhecido (evita o calculo abaixo)
     int tamN = (int)(log2(N));
-    float q1 = pow(2,(2*tamN));    // este � o valor ideal segundo Shor. N�o � usado no programa. Serve apenas de refer�ncia
+    float q1 = pow(2,(2*tamN));    // este eh o valor ideal segundo Shor. Nao eh usado no programa. Serve apenas de refer�ncia
     printf("\nvalor ideal para q: %.0f\n",q1);
     if(q < N){
         q = 1 << (tamN+4); // bitwise deslocamento s esquerda
@@ -75,7 +75,9 @@ double Prepara(double N, double x, double r, double q, float *Soma,float *P, int
  
     printf("\nCalculando probabilidades...\n");
     for(int i=0; i<q; i++){
-        Z[i] = cabsf((Y[i]*Y[i]));
+        Z[i] = (double)cabsf(csqrt(Y[i]));
+        printf("\n%f\n", cimag(Y[i]));
+        
         
     }
     soma= soma+Z[0];
