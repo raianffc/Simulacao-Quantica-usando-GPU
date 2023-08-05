@@ -38,3 +38,39 @@ Biblioteca ja instalada, vendo como usar IFFT.
 Tive problemas com algoritimo em sim. por termos uma lista, mesmo que unidimensional, muito grande e demorava muito para executar. Perdendo o próposito do projeto.
 
 Normalizar o vetor esta sendo um problema. Não consigo tirar elevar o quadrado para tirar o conjugado.
+
+
+A biblioteca FFTW (Fastest Fourier Transform in the West) é uma biblioteca de transformada de Fourier altamente otimizada e amplamente usada. Ela oferece funções para calcular transformadas de Fourier diretas e inversas em várias dimensões e suporta diferentes tipos de dados. Aqui estão alguns dos comandos mais comuns usados na FFTW3:
+
+Criação de um Plano:
+
+fftw_plan fftw_plan_dft_1d(int n, fftw_complex *in, fftw_complex *out, int sign, unsigned flags);
+fftw_plan fftw_plan_dft_r2c_1d(int n, double *in, fftw_complex *out, unsigned flags);
+fftw_plan fftw_plan_dft_c2r_1d(int n, fftw_complex *in, double *out, unsigned flags);
+Essas funções são usadas para criar um plano de transformada. n é o tamanho da transformada, in é o array de entrada, out é o array de saída (para transformadas complexas) ou NULL para transformadas reais, sign é 1 para FFT e -1 para IFFT, e flags são as opções de otimização.
+
+Execução da Transformada:
+
+void fftw_execute(const fftw_plan plan);
+Essa função executa a transformada especificada pelo plano.
+
+Liberando o Plano:
+
+void fftw_destroy_plan(fftw_plan plan);
+Essa função libera a memória alocada para um plano.
+
+Alocação e Liberação de Memória:
+
+fftw_complex* fftw_malloc(size_t size);
+void fftw_free(void *ptr);
+Use fftw_malloc para alocar memória para arrays de tipo fftw_complex (complexos) e fftw_free para liberar essa memória.
+
+Configurações de Otimização:
+
+#define FFTW_ESTIMATE 1
+#define FFTW_MEASURE 2
+#define FFTW_PATIENT 3
+#define FFTW_EXHAUSTIVE 4
+Essas macros são usadas para especificar os níveis de otimização ao criar um plano. FFTW_ESTIMATE é mais rápido, enquanto FFTW_EXHAUSTIVE é mais preciso.
+
+Esses são apenas alguns dos comandos mais comuns usados na biblioteca FFTW3. A documentação oficial do FFTW3 fornece informações detalhadas sobre todas as funções disponíveis e opções de configuração. Certifique-se de verificar a documentação para obter mais informações: http://www.fftw.org/fftw3_doc/index.html
