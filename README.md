@@ -76,4 +76,6 @@ Essas macros são usadas para especificar os níveis de otimização ao criar um
 para compilar no gcc no ubuntu 
 -lfftw3 -lm -I/usr/local/lib
 
+Agora terminar a parte de CUDA
+
 Esses são apenas alguns dos comandos mais comuns usados na biblioteca FFTW3. A documentação oficial do FFTW3 fornece informações detalhadas sobre todas as funções disponíveis e opções de configuração. Certifique-se de verificar a documentação para obter mais informações: http://www.fftw.org/fftw3_doc/index.html
