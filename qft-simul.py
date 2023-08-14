@@ -108,11 +108,13 @@ def Prepara(N,x,r=0,q=1):
 #    print(cont)
     print('Calculando FFT...')
     Y=ifft(Z)
+    print(Y)
     print('Calculando probabilidades...')
     for i in range(len(Y)):
         Z[i] = abs(Y[i]**2)
     Z = Z/sum(Z)    # normaliza a probabilidade
     print(sum(Z))
+    print(Z)
 #    mostraQFT(Z)
 
     print('Criando Soma com probabilidade acumulada')
@@ -203,21 +205,25 @@ def Fatores(N,x,R,S):
         for j in range(3):
             if S[i][j]==1: # o valor é um múltiplo da ordem
                 print('testa um divisor da ordem')
-                if R[i][j]%2==0:
+                if R[i][j] % 2 == 0:
                     print('Teste de Shor...')
-                    print(gcd(pow(x,int(R[i][j]//2),N)-1,N))
-                if R[i][j]%3==0:
+                    f = gcd(pow(x, int(R[i][j] // 2), N) - 1, N)
+                    fat.add(f)
+                    fat.add(N // f)
+                if R[i][j] % 3 == 0:
                     print('Teste com 3 ...')
-                    print(gcd(pow(x,int(R[i][j]//3),)-1,N))
-            elif S[i][j]==2:   # o valor é um divisor da ordem que encontra um fator
-                f=gcd(pow(x,int(R[i][j]),N)-1,N)
+                    f = gcd(pow(x, int(R[i][j] // 3), N) - 1, N)
+                    fat.add(f)
+                    fat.add(N // f)
+            elif S[i][j] == 2:
+                f = gcd(pow(x, int(R[i][j]), N) - 1, N)
                 fat.add(f)
-                fat.add(N//f)
+                fat.add(N // f)
     return fat
 # #------------------------- Início do programa ------------------------
 
-p1 = 29
-p2 = 31
+p1 = 47
+p2 = 43
 N  = p1 * p2 # N não precisa ser semi-primo
 x  = 2
 r  = 0
@@ -232,6 +238,5 @@ print(result)
 R=EstimaOrdem(r,result)
 
 S=EstimaFator(N,x,R)
-print(S)
 fat=Fatores(N,x,R,S)
 print(fat)
