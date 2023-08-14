@@ -1,5 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include <string.h>
+#include<stdbool.h>
 #include<math.h>
 #include<time.h>
 #include<complex.h>
@@ -48,14 +50,15 @@ float buscabin(float *Soma, float *P, double m, int tam) {
 double* FracCont(double x, double q, double N, int *tamL) {
     int tam = 1;
     double x_inic = x;
-    double *L = (double*)malloc(tam * sizeof(double));
+    double *L;
+    L = (double*)malloc(tam * sizeof(double));
     if (L == NULL) {
         printf("Erro na alocacao de memoria.");
         exit(1);
     }
     if (x == 1) {
         tam = 2;
-        L = realloc(L, tam * sizeof(double));
+        L = (double*)realloc(L, tam * sizeof(double));
         if (L == NULL) {
             printf("Erro na alocacao de memoria.");
             exit(1);
@@ -72,7 +75,7 @@ double* FracCont(double x, double q, double N, int *tamL) {
     do {
         int c = (int) x;
         if (tam != 1) {
-            L = realloc(L, (tam + 1) * sizeof(double));
+            L = (double*)realloc(L, (tam + 1) * sizeof(double));
             if (L == NULL) {
                 printf("Erro na alocacao de memoria.");
                 exit(1);
@@ -101,7 +104,7 @@ double** Frac(double *L, int *tamL) {
     int tamF = *tamL;
     if (*tamL == 0) {
         *tamL = 1;
-        L = realloc(L, (*tamL) * sizeof(double));
+        L = (double*)realloc(L, (*tamL) * sizeof(double));
         if (L == NULL) {
             printf("Erro na alocacao de memoria.");
             exit(1);
@@ -146,15 +149,15 @@ double** Frac(double *L, int *tamL) {
     }
     F[1][0]=(double)total;
     if(F[1][0]==0 && *tamL==1){
-        printf("\nFracao inexistente: %f \n", L[0]);
+        printf("\nFracao inexistente: %.0f \n", L[0]);
     }
     free(L);
     return F;
 }
 double *Prepara(double N, double x, double *r, double q){
     int tamN = (int)log2(N);
-    int q1 = 1 << (2 * tamN);  // este é o valor ideal segundo Shor. Não é usado no programa. Serve apenas de referência
-    printf("Valor ideal para q: %d\n", q1);
+    double q1 = 1 << (2 * tamN);  // este é o valor ideal segundo Shor. Não é usado no programa. Serve apenas de referência
+    printf("Valor ideal para q: %.0f\n", q1);
 
     if(q<N){
         q=1 << (tamN + 4);
@@ -339,7 +342,6 @@ float **EstimaFator(double N, double x,float **R, int tam){
                 int d=mdc((potTotal-1),N);
                 if (d > 1){
                     sucesso[j]=sucesso[j]+8;
-                    printf("\nvalor de sucesso: %f\n",sucesso[j]);
                 }
             }
             potTotal = potTotal%((int)N);
@@ -351,9 +353,33 @@ float **EstimaFator(double N, double x,float **R, int tam){
 
     return Sucesso;
 }
+int existe(int valor, int *array, int tamanho) {
+    for (int i = 0; i < tamanho; i++) {
+        if (array[i] == valor) {
+            return 1;  // O valor já existe
+        }
+    }
+    return 0;  // O valor não existe
+}
+int removerDuplicatas(int *array, int tamanho) {
+    if (tamanho <= 1) {
+        return tamanho;  // Não há duplicatas para remover
+    }
 
+    int novoTamanho = 1;  // Tamanho do novo array sem duplicatas
+    for (int i = 1; i < tamanho; i++) {
+        if (!existe(array[i], array, novoTamanho)) {
+            array[novoTamanho] = array[i];  // Adiciona o elemento único
+            novoTamanho++;
+        }
+    }
+
+    return novoTamanho;
+}
 int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fatores) {
-    int *fat = (int *)malloc((num_s * num_s * 2) * sizeof(int));
+    int *fat;
+    int *aux;
+    fat = (int *)malloc((num_s * num_s * 2) * sizeof(int));
     if (fat == NULL) {
         printf("Erro na alocacao de memoria.");
         exit(1);
@@ -364,11 +390,11 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
         for (int j = 0; j < 3; j++) {
             if (S[i][j] == 1) {
                 if ((int)R[i][j] % 2 == 0) {
-                    int f = mdc((int)(pow(x, (int)(R[i][j] / 2)) - 1), (int)N);
+                    int f = mdc((int)(((int)pow(x, (int)(R[i][j] / 2))%(int)N) - 1), (int)N);
                     fat[count++] = f;
                 }
                 if ((int)R[i][j] % 3 == 0) {
-                    int f = mdc((int)(pow(x, (int)(R[i][j] / 3)) - 1), (int)N);
+                    int f = mdc((int)(((int)pow(x, (int)(R[i][j] / 3))%(int)N) - 1), (int)N);
                     fat[count++] = f;
                 }
             } else if (S[i][j] == 2) {
@@ -378,18 +404,36 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
             }
         }
     }
-
-    *num_fatores = count;
+   /*int k=1, j=0;
+    for(int i=0; i<count;i++){
+        if(fat[i]!=N){
+            aux = (int*)realloc(aux,k*sizeof(int));
+            aux[j] =fat[i];
+		    k++;
+            j++;
+        }
+    }*/
+    printf("\ncontador: %d \n",count);
+    //printf("\ncontador k: %d \n",k);
+    /*if(k>1){
+        printf("Aux: [");
+        for(int i=0; i<k;i++){
+            printf("%d ", aux[i]);
+        }
+        printf("]\n");
+    }*/
+    *num_fatores = removerDuplicatas(fat, count);
+    //free(fat);
     return fat;
 }
 
 int main(){
-    double p1 = 43;
-    double p2 = 31;
+    double p1 = 31;
+    double p2 = 29;
     double N  = p1 * p2; //N nao precisa ser semi-primo
     double x  = 2;
     double r  = 0;
-    double q  = 1024*1024;//2**20
+    double q  = (int)pow(2, 24);//2**20
     int n  = 15;// quantidade de valores medidos 
     float *Soma;
     float *P;
@@ -445,12 +489,18 @@ int main(){
     R= EstimaOrdem(r, result, q, N, n);
 
     S = EstimaFator(N, x, R, n);
-
     fat = Fatores(N, x, R, S, n, &tamFat);
-    printf("Fatores: \n");
+    printf("\nFatores: \n");
+    printf("[");
     for(int i=0; i<tamFat;i++){
-        if(fat[i]!=N)
-            printf("\n%d\n", fat[i]);
+        printf("%d ",fat[i]);
     }
+    printf("]\n");
+    free(Soma);
+    free(P);
+    free(result);
+    free(R);
+    free(S);
+    free(fat);
     return 0;
 }
