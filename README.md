@@ -79,3 +79,6 @@ para compilar no gcc no ubuntu
 Agora terminar a parte de CUDA
 
 Esses são apenas alguns dos comandos mais comuns usados na biblioteca FFTW3. A documentação oficial do FFTW3 fornece informações detalhadas sobre todas as funções disponíveis e opções de configuração. Certifique-se de verificar a documentação para obter mais informações: http://www.fftw.org/fftw3_doc/index.html
+
+Para medir o tempo de execução do programa em C.
+https://www.techiedelight.com/pt/find-execution-time-c-program/
