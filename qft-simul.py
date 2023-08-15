@@ -1,6 +1,7 @@
 import random
 from numpy import *
 from numpy.fft import *
+import time
 
 def buscabin(Soma,P,m):
     n = len(Soma)
@@ -221,7 +222,7 @@ def Fatores(N,x,R,S):
                 fat.add(N // f)
     return fat
 # #------------------------- Início do programa ------------------------
-
+inicio = time.time()
 p1 = 47
 p2 = 43
 N  = p1 * p2 # N não precisa ser semi-primo
@@ -240,3 +241,5 @@ R=EstimaOrdem(r,result)
 S=EstimaFator(N,x,R)
 fat=Fatores(N,x,R,S)
 print(fat)
+fim = time.time()
+print('Tempo de execução: ', fim-inicio)

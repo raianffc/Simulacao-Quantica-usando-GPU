@@ -6,6 +6,7 @@
 #include<time.h>
 #include<complex.h>
 #include <fftw3.h>
+#include <unistd.h> 
 #define PI 3.14159265358979323846
 
 int mdc(int num1, int num2) {
@@ -25,7 +26,7 @@ int mmc(int num1, int num2) {
     return (num1 * num2) / a;
     
 }
-float buscabin(float *Soma, float *P, double m, int tam) {
+/*float buscabin(float *Soma, float *P, double m, int tam) {
     int inicio = 0;
     int fim = tam - 1;
 
@@ -46,7 +47,30 @@ float buscabin(float *Soma, float *P, double m, int tam) {
     else
         return P[fim];
 }
-
+*/
+float buscabin(float *Soma, float *P, double m, int tamSoma) {
+    int n = tamSoma;
+    if (n == 0) {
+        return 0;
+    } else if (n == 1) {
+        return P[0];
+    } else if (n == 2) {
+        if (m <= Soma[0]) {
+            return P[0];
+        } else {
+            return P[1];
+        }
+    } else {
+        int meio = n / 2;
+        if (m == Soma[meio]) {
+            return P[meio];
+        } else if (m < Soma[meio]) {
+            return buscabin(Soma, P, m, meio);
+        } else {
+            return buscabin(&Soma[meio], &P[meio], m, n - meio);
+        }
+    }
+}
 double* FracCont(double x, double q, double N, int *tamL) {
     int tam = 1;
     double x_inic = x;
@@ -428,13 +452,15 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
 }
 
 int main(){
+    double time_spent = 0.0;
+    clock_t begin = clock();
     double p1 = 31;
     double p2 = 29;
     double N  = p1 * p2; //N nao precisa ser semi-primo
     double x  = 2;
     double r  = 0;
     double q  = (int)pow(2, 24);//2**20
-    int n  = 15;// quantidade de valores medidos 
+    int n  = 15; // quantidade de valores medidos 
     float *Soma;
     float *P;
     int tamSoma_P;
@@ -496,11 +522,11 @@ int main(){
         printf("%d ",fat[i]);
     }
     printf("]\n");
-    free(Soma);
-    free(P);
-    free(result);
-    free(R);
-    free(S);
     free(fat);
+    sleep(2);
+    clock_t end = clock();
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+ 
+    printf("Tempo de execucao: %f segundos\n", time_spent);
     return 0;
 }
