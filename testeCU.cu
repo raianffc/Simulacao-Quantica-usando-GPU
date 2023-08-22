@@ -1,174 +1,79 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include <string.h>
-#include<stdbool.h>
-#include<math.h>
-#include<time.h>
-#include<complex.h>
-#include <fftw3.h>
-#include <cuComplex.h>
-#include <cufft.h>
+#include <stdio.h>
+#include <cuda_runtime.h>
 
-__global__ void calculateProbabilities(cuDoubleComplex *Y, double *Z, int q) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < q) {
-        Z[idx] = cuCabs(Y[idx]) * cuCabs(Y[idx]);
-    }
-}
-
-double *Prepara(double N, double x, double *r, double q) {
-    int tamN = (int)log2(N);
-    double q1 = 1 << (2 * tamN);
-    printf("Valor ideal para q: %.0f\n", q1);
-
-    if (q < N) {
-        q = 1 << (tamN + 4);
-    }
-    if (*r == 0) {
-        int s = x;
-        int i = 1;
-        while (s > 1) {
-            s = (int)(s * x) % ((int)N);
-            i++;
-        }
-        *r = i;
-        printf("Ordem r não informada. Ordem r calculada: %.0f\n", *r);
-    } else {
-        printf("Ordem r informada: %f\n", *r);
-    }
-
-    printf("Criando Z...\n");
-    double *Z = (double *)malloc(q * sizeof(double));
-    if (Z == NULL) {
-        printf("Erro na alocacao de memoria.");
-        exit(1);
-    }
-
-    cuDoubleComplex *Y;
-    cudaMalloc((void **)&Y, q * sizeof(cuDoubleComplex));
-    cudaMemset(Y, make_cuDoubleComplex(0.0, 0.0), q * sizeof(cuDoubleComplex));
-
-    calculateProbabilities<<<(q + 255) / 256, 256>>>(Y, Z, q);
-
-    cudaFree(Y);
-
-    double sum_Z = 0;
-    for (int i = 0; i < q; i++) {
-        sum_Z += Z[i];
-    }
-
-    double temp = 0;
-    for (int i = 0; i < q; i++) {
-        Z[i] = Z[i] / sum_Z;
-        temp += Z[i];
-    }
-    sum_Z = temp;
-    printf("Soma das probabilidades: %.20f\nCriando Soma com probabilidade acumulada...\n", sum_Z);
-
-    return Z;
-}
-__global__ void calculateSums(float *P, float *Soma, double *Z, int r, double q) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < r) {
-        double k = (q / r);
-        double pos = (idx * k);
-
-        P[2 * idx] = (float)pos;
-        Soma[2 * idx] = Z[(int)pos];
-
-        if (idx > 0) {
-            Soma[2 * idx] += Soma[2 * (idx - 1)];
-        }
-
-        P[2 * idx + 1] = pos + 1;
-
-        if (idx < r - 1) {
-            Soma[2 * idx + 1] = Soma[2 * idx];
-        } else {
-            P[2 * idx + 1] = -1 * (int)(curand_uniform(&state) * 101 * q);
-            Soma[2 * idx + 1] = 1;
-        }
-    }
-}
-
-__global__ void Soma_P_CUDA(double r, double q, float *P, float *Soma, double *Z, int n) {
+__global__ void vectorAdd(const double *A, const double *B, double *C, int size) {
+    printf("\naqui2\n");
     int tid = blockIdx.x * blockDim.x + threadIdx.x;
-
-    if (tid < n) {
-        double k = (q / r);
-        double pos = tid * k;
-        P[2 * tid] = (float)pos;
-        atomicAdd(&Soma[2 * tid], Z[(int)pos]);
-        P[2 * tid + 1] = pos + 1;
-        atomicAdd(&Soma[2 * tid + 1], Z[((int)pos) + 1]);
-
-        if (tid == ((int)r) - 1) {
-            P[2 * tid] = -1 * (int)((rand() % 101) * q);
-            Soma[2 * tid] = 1;
-        }
+    if (tid < size) {
+        C[tid] = A[tid] + B[tid];
     }
 }
 
-float *Soma_P_CUDA_Wrapper(double r, double q, float *P, float *Soma, double *Z, int n) {
-    float *d_P, *d_Soma;
-    double *d_Z;
+int main() {
+    int size = 5; // Tamanho dos vetores
+    double *h_A, *h_B, *h_C; // Vetores na CPU
+    double *d_A, *d_B, *d_C; // Vetores na GPU
 
-    cudaMalloc((void **)&d_P, 2 * n * sizeof(float));
-    cudaMalloc((void **)&d_Soma, 2 * n * sizeof(float));
-    cudaMalloc((void **)&d_Z, q * sizeof(double));
+    // Aloca memória para os vetores na CPU
+    h_A = (double *)malloc(size * sizeof(double));
+    h_B = (double *)malloc(size * sizeof(double));
+    h_C = (double *)malloc(size * sizeof(double));
 
-    cudaMemcpy(d_P, P, 2 * n * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_Soma, Soma, 2 * n * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_Z, Z, q * sizeof(double), cudaMemcpyHostToDevice);
+    // Inicializa os vetores na CPU
+    for (int i = 0; i < size; i++) {
+        h_A[i] = i;
+        h_B[i] = 2 * i;
+    }
 
+    // Aloca memória para os vetores na GPU
+    cudaMalloc((void **)&d_A, size * sizeof(double));
+    cudaMalloc((void **)&d_B, size * sizeof(double));
+    cudaMalloc((void **)&d_C, size * sizeof(double));
+
+    // Copia os vetores da CPU para a GPU
+    cudaMemcpy(d_A, h_A, size * sizeof(double), cudaMemcpyHostToDevice);
+    cudaMemcpy(d_B, h_B, size * sizeof(double), cudaMemcpyHostToDevice);
+
+    // Define o número de threads por bloco
     int threadsPerBlock = 256;
-    int blocksPerGrid = (n + threadsPerBlock - 1) / threadsPerBlock;
+    int numBlocks = (size + threadsPerBlock - 1) / threadsPerBlock;
 
-    Soma_P_CUDA<<<blocksPerGrid, threadsPerBlock>>>(r, q, d_P, d_Soma, d_Z, n);
-
-    cudaMemcpy(P, d_P, 2 * n * sizeof(float), cudaMemcpyDeviceToHost);
-    cudaMemcpy(Soma, d_Soma, 2 * n * sizeof(float), cudaMemcpyDeviceToHost);
-
-    cudaFree(d_P);
-    cudaFree(d_Soma);
-    cudaFree(d_Z);
-
-    return Soma;
-}
-int main(){
-    double p1 = 31;
-    double p2 = 29;
-    double N  = p1 * p2; //N nao precisa ser semi-primo
-    double x  = 2;
-    double r  = 0;
-    double q  = (int)pow(2, 24);//2**20
-    int n  = 15; // quantidade de valores medidos 
-    float *Soma;
-    float *P;
-    int tamSoma_P;
-    float **R;
-    float **S;
-    int *fat;
-    int tamFat;
-    double *Z; 
-    
-    Z = Prepara(N, x, &r, q);
+    // Executa o kernel de soma dos vetores
+    printf("\naqui1\n");
+    vectorAdd<<<numBlocks, threadsPerBlock>>>(d_A, d_B, d_C, size);
     cudaDeviceSynchronize();
-    tamSoma_P=(2*(r+1));
-    P = (float*)malloc((2*(r+1))*sizeof(float));
-    Soma = (float*)malloc((2*r+1)*sizeof(float));
-    if (P == NULL || Soma == NULL) {
-        printf("Erro na alocacao de memoria.");
-        exit(1);
+    printf("\naqui3\n");
+    // Copia o vetor resultado da GPU para a CPU
+    cudaMemcpy(h_C, d_C, size * sizeof(double), cudaMemcpyDeviceToHost);
+
+    // Exibe o resultado
+    printf("Vetor A: ");
+    for (int i = 0; i < size; i++) {
+        printf("%.1f ", h_A[i]);
     }
-    for(int i=0;i<(2*(r+1));i++){
-        P[i]=0;
-        Soma[i]=0;
+    printf("\nVetor B: ");
+    for (int i = 0; i < size; i++) {
+        printf("%.1f ", h_B[i]);
     }
-    Soma = Soma_P(r, q, P, Soma, Z);
-    
-    
-    printf("%.0f", r);
-    
+    printf("\nResultado da soma: ");
+    for (int i = 0; i < size; i++) {
+        printf("%.1f ", h_C[i]);
+    }
+    printf("\n");
+
+    // Libera a memória alocada
+    free(h_A);
+    free(h_B);
+    free(h_C);
+    cudaFree(d_A);
+    cudaFree(d_B);
+    cudaFree(d_C);
+
+    cudaError_t cudaError = cudaGetLastError();
+    if (cudaError != cudaSuccess) {
+        printf("Erro durante a execução do kernel: %s\n", cudaGetErrorString(cudaError));
+        return 1; // Encerra o programa com um código de erro
+    }
+
     return 0;
 }
