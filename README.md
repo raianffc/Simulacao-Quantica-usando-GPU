@@ -83,3 +83,4 @@ Esses são apenas alguns dos comandos mais comuns usados na biblioteca FFTW3. A 
 Para medir o tempo de execução do programa em C.
 https://www.techiedelight.com/pt/find-execution-time-c-program/
 Consertei o código em python, na função Fatores, na hora de fazer o mdc para saber se é ou nao fator de N, ele apenas printava e nao armazenava dentro da lista. Ultima coisa que poderia fazer para poder ficar mais rápido seria passar as listas para numpy para poder ficar mais rápido.
+Nao é compativel com modelos GTX, apenas RTX 
