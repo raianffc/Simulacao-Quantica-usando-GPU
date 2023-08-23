@@ -511,7 +511,6 @@ int removerDuplicatas(int *array, int tamanho) {
 }
 int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fatores) {
     int *fat;
-    int *aux;
     fat = (int *)malloc((num_s * num_s * 2) * sizeof(int));
     if (fat == NULL) {
         printf("Erro na alocacao de memoria.");
@@ -559,14 +558,14 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
 }
 int main(){
 
-    //double time_spent = 0.0;
-    //clock_t begin = clock();
-    double p1 = 31;
-    double p2 = 29;
+    double time_spent = 0.0;
+    clock_t begin = clock();
+    double p1 = 23;
+    double p2 = 41;
     double N  = p1 * p2; //N nao precisa ser semi-primo
     double x  = 2;
     double r  = 0;
-    double q  = (int)pow(2, 24);//2**20
+    double q  = (int)pow(2, 20);//2**20
     int n  = 15; // quantidade de valores medidos 
     float *Soma;
     float *P;
@@ -620,9 +619,9 @@ int main(){
     cudaFreeHost(Z);
     free(P);
     free(Soma);
-    //clock_t end = clock();
-    //time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+    clock_t end = clock();
+    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
  
-    //printf("\nTempo de execucao: %f segundos\n", time_spent);
+    printf("\nTempo de execucao: %f segundos\n", time_spent);
     return 0;
 }
