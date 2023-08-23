@@ -291,13 +291,13 @@ float **EstimaOrdem(double r,double *result,double q, double N, int n){
     int mult = 0;
     float **R;
     int taml = 1;
-    R=malloc(n*sizeof(float*));
+    R=(float**)malloc(n*sizeof(float*));
     if (R == NULL) {
         printf("Erro na alocacao de memoria.");
         exit(1);
     }
     for(int i=0;i<n;i++){
-        R[i]=malloc(3*sizeof(float));
+        R[i]=(float*)malloc(3*sizeof(float));
         if (R[i] == NULL) {
             printf("Erro na alocacao de memoria.");
             exit(1);
@@ -328,13 +328,13 @@ float **EstimaFator(double N, double x,float **R, int tam){
     float **Sucesso;
     int potTotal=1;
     int pot;
-    Sucesso=malloc(tam*sizeof(int));
+    Sucesso=(float**)malloc(tam*sizeof(float*));
     if (Sucesso == NULL) {
         printf("Erro na alocacao de memoria.");
         exit(1);
     }
     for(int i = 0; i<tam; i++){
-        Sucesso[i]=malloc(3*sizeof(int));
+        Sucesso[i]=(int*)malloc(3*sizeof(int));
         if (Sucesso[i] == NULL) {
             printf("Erro na alocacao de memoria.");
             exit(1);
