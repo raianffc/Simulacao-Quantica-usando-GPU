@@ -84,3 +84,98 @@ Para medir o tempo de execução do programa em C.
 https://www.techiedelight.com/pt/find-execution-time-c-program/
 Consertei o código em python, na função Fatores, na hora de fazer o mdc para saber se é ou nao fator de N, ele apenas printava e nao armazenava dentro da lista. Ultima coisa que poderia fazer para poder ficar mais rápido seria passar as listas para numpy para poder ficar mais rápido.
 Nao é compativel com modelos GTX, apenas RTX 
+
+Primeiro teste
+  N = 29*31;
+  "qbits" = 3;
+  chute =2;
+  q = 2^24;
+Tempo de execução:
+  Cuda: 3.16 segundos
+  C: segundos
+  Python: segundos
+
+Segundo teste
+  N = 29*31;
+  "qbits" = 3;
+  chute =2;
+  q = 2^20;
+Tempo de execução:
+  Cuda: 0.159 segundos
+  C: segundos
+  Python: segundos
+
+Terceiro teste
+  N = 83*89;
+  "qbits" = 3;
+  chute =2;
+  q = 2^24;
+Tempo de execução:
+  Cuda: 0.729 segundos Nao acertou, chute talvez
+  C: segundos
+  Python: segundos
+
+Quarto teste
+  N = 83*89;
+  "qbits" = 3;
+  chute =2;
+  q = 2^20;
+Tempo de execução:
+  Cuda: 0.15 segundos Nao acertou, chute talvez
+  C: segundos
+  Python: segundos
+Quinto teste
+  N = 47*31;
+  "qbits" = 3;
+  chute =2;
+  q = 2^20;
+Tempo de execução:
+  Cuda: 0.159 segundos
+  C: segundos
+  Python: segundos
+
+Sexto teste
+  N = 47*31;
+  "qbits" = 3;
+  chute =2;
+  q = 2^24;
+Tempo de execução:
+  Cuda:  3.741 segundos
+  C: segundos
+  Python: segundos
+Setimo teste
+  N = 59*41;
+  "qbits" = 3;
+  chute =2;
+  q = 2^20;
+Tempo de execução:
+  Cuda:  0.16 segundos
+  C: segundos
+  Python: segundos
+Oitavo teste
+  N = 59*41;
+  "qbits" = 3;
+  chute =2;
+  q = 2^24;
+Tempo de execução:
+  Cuda:  0.996 segundos Nao acertou, chute talvez
+  C: segundos
+  Python: segundos
+Nono teste
+  N = 23*41;
+  "qbits" = 3;
+  chute =2;
+  q = 2^24;
+Tempo de execução:
+  Cuda:  2.054 segundos Nao acertou, chute talvez
+  C: segundos
+  Python: segundos
+Décimo teste
+  N = 23*41;
+  "qbits" = 3;
+  chute =2;
+  q = 2^20;
+Tempo de execução:
+  Cuda:  0.173 segundos
+  C: segundos
+  Python: segundos
