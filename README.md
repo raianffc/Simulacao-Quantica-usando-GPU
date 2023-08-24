@@ -92,8 +92,8 @@ Primeiro teste
   q = 2^24;
 Tempo de execução:
   Cuda: 3.16 segundos
-  C: segundos
-  Python: segundos
+  C: 0.8967 segundos
+  Python: 6.0265 segundos
 
 Segundo teste
   N = 29*31;
@@ -102,8 +102,8 @@ Segundo teste
   q = 2^20;
 Tempo de execução:
   Cuda: 0.159 segundos
-  C: segundos
-  Python: segundos
+  C: 0.0407 segundos
+  Python: 0.3918 segundos
 
 Terceiro teste
   N = 83*89;
@@ -112,8 +112,8 @@ Terceiro teste
   q = 2^24;
 Tempo de execução:
   Cuda: 0.729 segundos Nao acertou, chute talvez
-  C: segundos
-  Python: segundos
+  C: 0.958328 segundos
+  Python: 6.0848 segundos
 
 Quarto teste
   N = 83*89;
@@ -122,8 +122,9 @@ Quarto teste
   q = 2^20;
 Tempo de execução:
   Cuda: 0.15 segundos Nao acertou, chute talvez
-  C: segundos
-  Python: segundos
+  C: 0.036610 segundos
+  Python: 0.3879 segundos
+  
 Quinto teste
   N = 47*31;
   "qbits" = 3;
@@ -131,8 +132,8 @@ Quinto teste
   q = 2^20;
 Tempo de execução:
   Cuda: 0.159 segundos
-  C: segundos
-  Python: segundos
+  C: 0.961187 segundos
+  Python: 0.3933 segundos
 
 Sexto teste
   N = 47*31;
@@ -141,8 +142,9 @@ Sexto teste
   q = 2^24;
 Tempo de execução:
   Cuda:  3.741 segundos
-  C: segundos
-  Python: segundos
+  C: 0.045941 segundos Nao acertou, chute talvez
+  Python: 6.1758 segundos
+  
 Setimo teste
   N = 59*41;
   "qbits" = 3;
@@ -150,8 +152,9 @@ Setimo teste
   q = 2^20;
 Tempo de execução:
   Cuda:  0.16 segundos
-  C: segundos
-  Python: segundos
+  C: 0.056414 segundos Nao acertou, chute talvez
+  Python: 0.3919 segundos
+  
 Oitavo teste
   N = 59*41;
   "qbits" = 3;
@@ -159,8 +162,9 @@ Oitavo teste
   q = 2^24;
 Tempo de execução:
   Cuda:  0.996 segundos Nao acertou, chute talvez
-  C: segundos
-  Python: segundos
+  C: 0.936393 segundos
+  Python: 5.9983 segundos
+  
 Nono teste
   N = 23*41;
   "qbits" = 3;
@@ -168,8 +172,9 @@ Nono teste
   q = 2^24;
 Tempo de execução:
   Cuda:  2.054 segundos Nao acertou, chute talvez
-  C: segundos
-  Python: segundos
+  C: 0.940327 segundos Nao acertou, chute talvez
+  Python: 6.1717 segundos
+  
 Décimo teste
   N = 23*41;
   "qbits" = 3;
@@ -177,5 +182,5 @@ Décimo teste
   q = 2^20;
 Tempo de execução:
   Cuda:  0.173 segundos
-  C: segundos
-  Python: segundos
+  C: 0.040281 segundos Nao acertou, chute talvez
+  Python: 0.4062 segundos
