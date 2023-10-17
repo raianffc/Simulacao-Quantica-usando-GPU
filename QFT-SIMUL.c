@@ -334,7 +334,7 @@ float **EstimaFator(double N, double x,float **R, int tam){
         exit(1);
     }
     for(int i = 0; i<tam; i++){
-        Sucesso[i]=(int*)malloc(3*sizeof(int));
+        Sucesso[i]=(float*)malloc(3*sizeof(float));
         if (Sucesso[i] == NULL) {
             printf("Erro na alocacao de memoria.");
             exit(1);
