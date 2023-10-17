@@ -184,3 +184,15 @@ Tempo de execução:
   Cuda:  0.173 segundos
   C: 0.040281 segundos Nao acertou, chute talvez
   Python: 0.4062 segundos
+
+  Valores testado para permutação de 23*29, 23*31, 23*37, 23*41, 23*47, 23*53, 23*59, 23*61, 23*67, 23*71, 23*73, 23*79, 23*83, 23*89, 23*97
+  Valores testado para permutação de 31*23,31*23, 31*37, 31*41, 31*47, 31*53, 31*59, 31*61, 31*67, 31*71, 31*73, 31*79, 31*83, 31*89, 31*97
+  Valores testado para permutação de 29*23, 29*31, 29*37, 29*41, 29*47, 29*53, 29*59, 29*61, 29*67, 29*71, 29*73, 29*79, 29*83, 29*89, 29*97
+
+  todos os 3 testes nao obteve todos resultados, tanto em python, quanto em C, quando em CUDA.
+  Falha no estouro no mmc erra toda a conta para achar o valor correto.
+  o proprio python ele estoura, porém ha tratamento de erro que é manter o ultimo numero que nao foi estourado. Não sei o motivo de dar certo ainda.
+  passa o algoritmo de frações continuadas para long int e obteve resultado melhor que o python. porém na hora de aplicar existe erro ainda. 
+  função fat, as vezes so não funciona. Usei printf para poder achar o erro, ele entra nos laçoes e condinções porem ele nao executa outros comandos. Provavel ser memory leak.
+  Preciso terminar esse código, deixa-lo o mais otimizado possivel. Em CUDA não consegui achar uma solução melhor a não ser que desparalelize algumas funções, tirando isso, tem o mesmo "defeito" que C, porém defeito ja descoberto e tendo tentativas de soluções.
+  
