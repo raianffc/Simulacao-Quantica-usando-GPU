@@ -3,6 +3,23 @@ from numpy import *
 from numpy.fft import *
 import time
 
+"""int mdc(int num1, int num2) {
+    int resto;
+    do {
+        resto = num1 % num2;
+        num1 = num2;
+        num2 = resto;
+    } while (resto != 0);
+    return num1;
+}
+
+int mmc(int num1, int num2) {
+    int resto, a;
+    if(num2==0) return num1;
+    a = mdc(num1,num2);
+    return (num1 * num2) / a;
+    
+}"""
 def buscabin(Soma,P,m):
     n = len(Soma)
     if n==0 :

@@ -7,7 +7,6 @@
 #include<complex.h>
 #include <fftw3.h>
 #include <unistd.h> 
-#define PI 3.14159265358979323846
 
 int mdc(int num1, int num2) {
     int resto;
@@ -358,7 +357,7 @@ float **EstimaFator(double N, double x,float **R, int tam){
                 }
             }
             potTotal = potTotal*pot;
-            if(potTotal%((int)N)==1){
+            if(potTotal%((int)N) == 1){
                 sucesso[j]=sucesso[j]+4;
                 printf("\nfatores do múltiplo da ordem %d %d\n",pot,(potTotal/pot));
             }
@@ -377,28 +376,29 @@ float **EstimaFator(double N, double x,float **R, int tam){
 
     return Sucesso;
 }
-int existe(int valor, int *array, int tamanho) {
-    for (int i = 0; i < tamanho; i++) {
+int existe(int valor, int *array, int *tamanho) {
+    for (int i = 0; i < *tamanho; i++) {
         if (array[i] == valor) {
             return 1;  // O valor já existe
         }
     }
     return 0;  // O valor não existe
 }
-int removerDuplicatas(int *array, int tamanho) {
-    if (tamanho <= 1) {
-        return tamanho;  // Não há duplicatas para remover
+int *removerDuplicatas(int *array, int *tamanho) {
+    if (*tamanho <= 1) {
+        return NULL;  // Não há duplicatas para remover
     }
-
-    int novoTamanho = 1;  // Tamanho do novo array sem duplicatas
-    for (int i = 1; i < tamanho; i++) {
-        if (!existe(array[i], array, novoTamanho)) {
-            array[novoTamanho] = array[i];  // Adiciona o elemento único
+    int novoTamanho = 0;  // Tamanho do novo array sem duplicatas
+    int *fat = (int*)malloc(sizeof(int)); 
+    for (int i = 1; i < *tamanho; i++) {
+        if (!existe(array[i], array, &novoTamanho)) {
             novoTamanho++;
+            fat=(int*)realloc(fat,novoTamanho*sizeof(int));
+            fat[novoTamanho-1] = array[i];  // Adiciona o elemento único
         }
     }
-
-    return novoTamanho;
+    *tamanho = novoTamanho;
+    return fat;
 }
 int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fatores) {
     int *fat;
@@ -413,15 +413,19 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
     for (int i = 0; i < num_s; i++) {
         for (int j = 0; j < 3; j++) {
             if (S[i][j] == 1) {
+                printf("testa um divisor da ordem\n");
                 if ((int)R[i][j] % 2 == 0) {
+                    printf("Teste de Shor...\n");
                     int f = mdc((int)(((int)pow(x, (int)(R[i][j] / 2))%(int)N) - 1), (int)N);
                     fat[count++] = f;
                 }
                 if ((int)R[i][j] % 3 == 0) {
+                    printf("Teste com 3...\n");
                     int f = mdc((int)(((int)pow(x, (int)(R[i][j] / 3))%(int)N) - 1), (int)N);
                     fat[count++] = f;
                 }
             } else if (S[i][j] == 2) {
+                printf("aqui...\n");
                 int f = mdc((int)pow(x, (int)R[i][j]) - 1, (int)N);
                 fat[count++] = f;
                 fat[count++] = (int)N / f;
@@ -437,7 +441,7 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
             j++;
         }
     }*/
-    printf("\ncontador: %d \n",count);
+    //printf("\ncontador: %d \n",count);
     //printf("\ncontador k: %d \n",k);
     /*if(k>1){
         printf("Aux: [");
@@ -446,7 +450,9 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
         }
         printf("]\n");
     }*/
-    *num_fatores = removerDuplicatas(fat, count);
+    
+    fat = removerDuplicatas(fat, &count);
+    *num_fatores = count;
     //free(fat);
     return fat;
 }
@@ -454,12 +460,12 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
 int main(){
     double time_spent = 0.0;
     clock_t begin = clock();
-    double p1 = 31;
-    double p2 = 29;
+    double p1 = 37;
+    double p2 = 41;
     double N  = p1 * p2; //N nao precisa ser semi-primo
     double x  = 2;
     double r  = 0;
-    double q  = (int)pow(2, 24);//2**20
+    double q  = (int)pow(2, 20);//2**20
     int n  = 15; // quantidade de valores medidos 
     float *Soma;
     float *P;

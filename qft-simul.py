@@ -223,8 +223,8 @@ def Fatores(N,x,R,S):
     return fat
 # #------------------------- Início do programa ------------------------
 inicio = time.time()
-p1 = 47
-p2 = 43
+p1 = 37
+p2 = 41
 N  = p1 * p2 # N não precisa ser semi-primo
 x  = 2
 r  = 0

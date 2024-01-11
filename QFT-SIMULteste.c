@@ -6,8 +6,7 @@
 #include<time.h>
 #include<complex.h>
 #include <fftw3.h>
-#include <unistd.h> 
-#define PI 3.14159265358979323846
+#include <unistd.h>
 
 int mdc(int num1, int num2) {
     int resto;
