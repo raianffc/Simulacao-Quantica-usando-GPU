@@ -203,3 +203,4 @@ Tempo de execução:
 
   
 ![image](https://github.com/raianffc/Simulacao-Quantica-usando-GPU/assets/54862169/b51d44e9-316d-4dac-9375-984e149eb2dd)
+Nesse print a probababilidade saiu igual!
