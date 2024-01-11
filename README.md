@@ -198,3 +198,8 @@ Tempo de execução:
 
   Para poder compilar seu código, é necessário ter a biblioteca fftw3 instalado e o comando do terminal ficará assim:
   gcc seuCodigo.c -o seuCodigo.exe -lfftw3 -lm
+
+  Saidas diferentes para o calculo da probabilidade em c e python. alem disso resultado das medidas muitos diferentes, porém por ser número aleatório. Dentro do limite
+
+  
+![image](https://github.com/raianffc/Simulacao-Quantica-usando-GPU/assets/54862169/b51d44e9-316d-4dac-9375-984e149eb2dd)
