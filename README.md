@@ -195,4 +195,6 @@ Tempo de execução:
   passa o algoritmo de frações continuadas para long int e obteve resultado melhor que o python. porém na hora de aplicar existe erro ainda. 
   função fat, as vezes so não funciona. Usei printf para poder achar o erro, ele entra nos laçoes e condinções porem ele nao executa outros comandos. Provavel ser memory leak.
   Preciso terminar esse código, deixa-lo o mais otimizado possivel. Em CUDA não consegui achar uma solução melhor a não ser que desparalelize algumas funções, tirando isso, tem o mesmo "defeito" que C, porém defeito ja descoberto e tendo tentativas de soluções.
-  
+
+  Para poder compilar seu código, é necessário ter a biblioteca fftw3 instalado e o comando do terminal ficará assim:
+  gcc seuCodigo.c -o seuCodigo.exe -lfftw3 -lm
