@@ -43,6 +43,7 @@ def Frac(L) :
         F[0][i+1]=num
         F[1][i+1]=den
     F[0][0]=m-1
+    print('print F[0][0]',F[0][0])
     if F[1][2:m]!=[]:
         if m>1:
             F[1][0]=lcm.reduce(array(F[1][2:m]))
@@ -50,6 +51,21 @@ def Frac(L) :
             print("Fração inexistente:",L)
 
     return F
+def EstimaOrdem(r,result):
+    mult = 0
+    n    = len(result)
+    R    = []
+
+    print('n:',n)
+    print('Tenta estimar a ordem r=ord(x,N) ou múltiplo ou divisor dela para extrair os fatores de N')
+    for i in range(n):
+        l=[1,1,1]
+        for j in range(-1,2):
+            print('.',end='')
+            t=Frac(FracCont(result[i]+j,q))
+            l[j+1]=t[1][0]
+        R.append(l)
+    return R
 # #------------------------- Início do programa ------------------------
 p1 = 37
 p2 = 41
@@ -57,3 +73,7 @@ N  = p1 * p2 # N não precisa ser semi-primo
 x  = 2
 r  = 0
 q  = 2**20
+
+result = [343700, 774782, 570891, 367001, 93206, 1042750, 425256, 1, 757304, 1042750, 343700, 1042750, 297096, 75730, 413604]
+R = EstimaOrdem(r, result)
+print(R)

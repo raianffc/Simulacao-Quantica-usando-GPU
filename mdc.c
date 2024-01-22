@@ -5,7 +5,6 @@
 #include<math.h>
 #include<time.h>
 #include<complex.h>
-#include <fftw3.h>
 #include <unistd.h> 
 
 long int mdc(long int num1, long int num2) {
@@ -25,41 +24,20 @@ long int mmc(long int num1, long int num2) {
     return (num1 * num2) / a;
     
 }
-float buscabin(float *Soma, float *P, double m, int tamSoma) {
-    int n = tamSoma;
-    if (n == 0) {
-        return 0;
-    } else if (n == 1) {
-        return P[0];
-    } else if (n == 2) {
-        if (m <= Soma[0]) {
-            return P[0];
-        } else {
-            return P[1];
-        }
-    } else {
-        int meio = n / 2;
-        if (m == Soma[meio]) {
-            return P[meio];
-        } else if (m < Soma[meio]) {
-            return buscabin(Soma, P, m, meio);
-        } else {
-            return buscabin(&Soma[meio], &P[meio], m, n - meio);
-        }
-    }
-}
-double* FracCont(double x, double q, double N, int *tamL) {
+
+unsigned long* FracCont(unsigned long x, unsigned long q, unsigned long N, int *tamL) {
     int tam = 1;
-    double x_inic = x;
-    double *L;
-    L = (double*)malloc(tam * sizeof(double));
+    double x_inic = (double)x;
+    double x_double = (double)x;
+    unsigned long *L;
+    L = (unsigned long*)malloc(tam * sizeof(unsigned long));
     if (L == NULL) {
         printf("Erro na alocacao de memoria.");
         exit(1);
     }
     if (x == 1) {
         tam = 2;
-        L = (double*)realloc(L, tam * sizeof(double));
+        L = (unsigned long*)realloc(L, tam * sizeof(unsigned long));
         if (L == NULL) {
             printf("Erro na alocacao de memoria.");
             exit(1);
@@ -70,55 +48,55 @@ double* FracCont(double x, double q, double N, int *tamL) {
     } else {
         L[0] = -1;
     }
-    x = x / q;
+    x_double = x_double / (double)q;
     int i = 0;
     double max = log(x_inic) / log(1.6);
     do {
-        int c = (int) x;
+        int c = (int) x_double;
         if (tam != 1) {
-            L = (double*)realloc(L, (tam + 1) * sizeof(double));
+            L = (unsigned long*)realloc(L, (tam + 1) * sizeof(unsigned long));
             if (L == NULL) {
                 printf("Erro na alocacao de memoria.");
                 exit(1);
             }
-            L[tam] = (double) c;
+            L[tam] = (unsigned long) c;
         } else {
-            L[0] = (double) c;
+            L[0] = (unsigned long) c;
         }
-        x = x - c;
-        if (x >= 0) {
-            x = 1 / x;
-            if (x > x_inic || x > N) {
-                x = 0;
+        x_double = x_double - (double)c;
+        if (x_double >= 0) {
+            x_double = 1 / x_double;
+            if (x_double > x_inic || x_double > N) {
+                x_double = 0;
             }
         } else {
-            x = 0;
+            x_double = 0;
         }
         i++;
         tam++;
-    } while (x > 0 && i < max);
+    } while (x_double > 0 && i < max);
     *tamL = tam - 1;
     return L;
 }
 
-double** Frac(double *L, int *tamL) {
+unsigned long** Frac(unsigned long *L, int *tamL) {
     int tamF = *tamL;
     if (*tamL == 0) {
         *tamL = 1;
-        L = (double*)realloc(L, (*tamL) * sizeof(double));
+        L = (unsigned long*)realloc(L, (*tamL) * sizeof(unsigned long));
         if (L == NULL) {
             printf("Erro na alocacao de memoria.");
             exit(1);
         }
         L[0] = 1;
     }
-    double **F = (double**)malloc(2 * sizeof(double *));
+    unsigned long **F = (unsigned long**)malloc(2 * sizeof(unsigned long *));
     if (F == NULL) {
         printf("Erro na alocacao de memoria.");
         exit(1);
     }
     for (int i = 0; i < 2; i++) {
-        F[i] = (double*)malloc((tamF) * sizeof(double));
+        F[i] = (unsigned long*)malloc((tamF) * sizeof(unsigned long));
         if (F[i] == NULL) {
             printf("\nErro na alocacao de memoria.\n");
             exit(1);
@@ -139,36 +117,77 @@ double** Frac(double *L, int *tamL) {
             num = den;
             den = L[j]*den+temp;
         }
-        F[0][i+1]=(double)num;
-        F[1][i+1]=(double)den;
+        F[0][i+1]=(unsigned long)num;
+        F[1][i+1]=(unsigned long)den;
     }
     F[0][0]=(tamF)-1;
+    printf("print F[0][0]: %lu", F[0][0]);
 
     int total = (int)F[1][2];
     for(int j=3;j<tamF;j++){
         total = mmc(total,(int)F[1][j]);
     }
-    F[1][0]=(double)total;
+    F[1][0]=(unsigned long)total;
     if(F[1][0]==0 && *tamL==1){
-        printf("\nFracao inexistente: %.0f \n", L[0]);
+        printf("\nFracao inexistente: %lu \n", L[0]);
     }
     free(L);
     return F;
 }
 
+unsigned long **EstimaOrdem(unsigned long r,unsigned long *result,unsigned long q, unsigned long N, int n){
+    for(int j =0; j<n; j++){
+        printf(" Result[%d]: %lu",j, result[j]);
+    }
+    int mult = 0;
+    unsigned long **R;
+    int taml = 1;
+    R=(unsigned long**)malloc(n*sizeof(unsigned long*));
+    if (R == NULL) {
+        printf("Erro na alocacao de memoria.");
+        exit(1);
+    }
+    for(int i=0;i<n;i++){
+        R[i]=(unsigned long*)malloc(3*sizeof(unsigned long));
+        if (R[i] == NULL) {
+            printf("Erro na alocacao de memoria.");
+            exit(1);
+        }
+    }
+    printf("\nTenta estimar a ordem r=ord(x,N) ou multiplo ou divisor dela para extrair os fatores de N\n");
+    for (int i=0;i<n;i++){
+        for(int j =-1; j<2; j++){
+            printf(".");
+            unsigned long *l = FracCont(result[i]+j,q,N, &taml);
+            unsigned long **t = Frac(l, &taml);
+            R[i][j+1]=t[1][0];
+            free(t);
+        }
+        printf("\n");
+    }
+    return R;
+}
+
 int main(){
-    double p1 = 37;
-    double p2 = 41;
-    double N  = p1 * p2; //N nao precisa ser semi-primo
-    double x  = 2;
-    double r  = 0;
-    double q  = (int)pow(2, 20);//2**20
+    unsigned long p1 = 37;
+    unsigned long p2 = 41;
+    unsigned long N  = p1 * p2; //N nao precisa ser semi-primo
+    unsigned long x  = 2;
+    unsigned long r  = 0;
+    unsigned long q  = (int)pow(2, 20);//2**20
     int n  = 15; // quantidade de valores medidos 
     float *Soma;
     float *P;
     int tamSoma_P;
-    double *Z; 
-    float **R;
-
+    unsigned long *Z; 
+    unsigned long **R;
+    unsigned long result [15]= {343700, 774782, 570891, 367001, 93206, 1042750, 425256, 1, 757304, 1042750, 343700, 1042750, 297096, 75730, 413604};
+    R = EstimaOrdem(r, result, q, N, n);
+    for(int i=0; i<15; i++){
+        for(int j =0; j<3; j++){
+            printf(" R[%d][%d]: %lu", i,j, R[i][j]);
+        }
+        printf("\n");
+    }
     return 0;
 }
