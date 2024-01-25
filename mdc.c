@@ -7,8 +7,8 @@
 #include<complex.h>
 #include <unistd.h> 
 
-long int mdc(long int num1, long int num2) {
-    long int resto;
+unsigned int mdc(unsigned int num1, unsigned int num2) {
+    unsigned int resto;
     do {
         resto = num1 % num2;
         num1 = num2;
@@ -17,8 +17,8 @@ long int mdc(long int num1, long int num2) {
     return num1;
 }
 
-long int mmc(long int num1, long int num2) {
-    long int resto, a;
+unsigned int mmc(unsigned int num1, unsigned int num2) {
+    unsigned int resto, a;
     if(num2==0) return num1;
     a = mdc(num1,num2);
     return (num1 * num2) / a;
@@ -159,6 +159,13 @@ unsigned long **EstimaOrdem(unsigned long r,unsigned long *result,unsigned long 
         for(int j =-1; j<2; j++){
             printf(".");
             unsigned long *l = FracCont(result[i]+j,q,N, &taml);
+            int k;
+            printf("\n");
+            for(k =0; k<taml; k++){
+                printf("%lu,", k, l[k]);
+                
+            }
+            printf("\n");
             unsigned long **t = Frac(l, &taml);
             R[i][j+1]=t[1][0];
             free(t);
