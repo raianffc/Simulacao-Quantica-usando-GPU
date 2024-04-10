@@ -211,3 +211,4 @@ Python
 [343700, 774782, 570891, 367001, 93206, 1042750, 425256, 1, 757304, 1042750, 343700, 1042750, 297096, 75730, 413604]
 
 Pesquisa sobre precisao numerica arbitraria e uso da biblioteca GMP. fase de fazer o codigo e testar para saber se funcionou
+para instalar eu usei sudo apt install libgmp-dev, coloquei o include no arquivo testei e funcionou.
