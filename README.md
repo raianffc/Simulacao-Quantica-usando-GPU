@@ -197,7 +197,7 @@ Tempo de execução:
   Preciso terminar esse código, deixa-lo o mais otimizado possivel. Em CUDA não consegui achar uma solução melhor a não ser que desparalelize algumas funções, tirando isso, tem o mesmo "defeito" que C, porém defeito ja descoberto e tendo tentativas de soluções.
 
   Para poder compilar seu código, é necessário ter a biblioteca fftw3 instalado e o comando do terminal ficará assim:
-  gcc seuCodigo.c -o seuCodigo.exe -lfftw3 -lgmp -lm
+  gcc teste.c -o teste -lfftw3 -lgmp -lm
 
   Saidas diferentes para o calculo da probabilidade em c e python. alem disso resultado das medidas muitos diferentes, porém por ser número aleatório. Dentro do limite
 
