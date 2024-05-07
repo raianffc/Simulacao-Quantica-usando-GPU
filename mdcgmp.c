@@ -6,6 +6,9 @@
 #include<time.h>
 #include<complex.h>
 #include <unistd.h> 
+#include <stdio.h>
+#include <stdlib.h>
+#include <gmp.h>
 
 unsigned int mdc(unsigned int num1, unsigned int num2) {
     unsigned int resto;
@@ -135,45 +138,62 @@ unsigned long** Frac(unsigned long *L, int *tamL) {
     return F;
 }
 
-unsigned long **EstimaOrdem(unsigned long r,unsigned long *result,unsigned long q, unsigned long N, int n){
-    for(int j =0; j<n; j++){
-        printf(" Result[%d]: %lu",j, result[j]);
-    }
-    int mult = 0;
-    unsigned long **R;
-    int taml = 1;
-    R=(unsigned long**)malloc(n*sizeof(unsigned long*));
+// EstimaOrdem usando GMP
+#include <stdio.h>
+#include <stdlib.h>
+#include <gmp.h>
+
+mpz_t **EstimaOrdem(unsigned long r, unsigned long *result, unsigned long q, unsigned long N, int n) {
+    mpz_t **R;
+
+    // Alocar memória para R usando GMP
+    R = malloc(n * sizeof(mpz_t *));
     if (R == NULL) {
-        printf("Erro na alocacao de memoria.");
+        printf("Erro na alocação de memória.\n");
         exit(1);
     }
-    for(int i=0;i<n;i++){
-        R[i]=(unsigned long*)malloc(3*sizeof(unsigned long));
+
+    for (int i = 0; i < n; i++) {
+        R[i] = malloc(3 * sizeof(mpz_t));
         if (R[i] == NULL) {
-            printf("Erro na alocacao de memoria.");
+            printf("Erro na alocação de memória.\n");
             exit(1);
         }
+        for (int j = 0; j < 3; j++) {
+            mpz_init(R[i][j]);
+        }
     }
-    printf("\nTenta estimar a ordem r=ord(x,N) ou multiplo ou divisor dela para extrair os fatores de N\n");
-    for (int i=0;i<n;i++){
-        for(int j =-1; j<2; j++){
+
+    printf("\nTentando estimar a ordem r=ord(x,N) ou múltiplo ou divisor dela para extrair os fatores de N\n");
+    for (int i = 0; i < n; i++) {
+        for (int j = -1; j <= 1; j++) {
             printf(".");
-            unsigned long *l = FracCont(result[i]+j,q,N, &taml);
-            int k;
-            printf("\n");
-            for(k =0; k<taml; k++){
-                printf("%d %lu,", k, l[k]);
-                
+
+            // Chamar FracCont com os tipos originais (unsigned long)
+            int taml = 0;
+            unsigned long adjusted_result = result[i] + j; // Ajustando resultado
+            unsigned long *frac_cont_result = FracCont(adjusted_result, q, N, &taml);
+
+            // Chamar Frac com os tipos originais (unsigned long)
+            unsigned long **t = Frac(frac_cont_result, &taml);
+
+            // Converter o resultado de Frac para mpz_t para armazenar em R
+            mpz_set_ui(R[i][j + 1], t[1][0]);
+
+            // Liberação da memória
+            for (int k = 0; k < 2; k++) {
+                free(t[k]); // Corrigido para garantir a liberação correta
             }
-            printf("\n");
-            unsigned long **t = Frac(l, &taml);
-            R[i][j+1]=t[1][0];
-            free(t);
+            free(t); // Certifique-se de que não está liberando duas vezes
+            free(frac_cont_result);
         }
         printf("\n");
     }
+
     return R;
 }
+
+
 
 int main(){
     unsigned long p1 = 37;
@@ -187,14 +207,16 @@ int main(){
     float *P;
     int tamSoma_P;
     unsigned long *Z; 
-    unsigned long **R;
+    mpz_t **R;
     unsigned long result [15]= {343700, 774782, 570891, 367001, 93206, 1042750, 425256, 1, 757304, 1042750, 343700, 1042750, 297096, 75730, 413604};
     R = EstimaOrdem(r, result, q, N, n);
-    for(int i=0; i<15; i++){
-        for(int j =0; j<3; j++){
-            printf(" R[%d][%d]: %lu", i,j, R[i][j]);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < 3; j++) {
+            gmp_printf("R[%d][%d]: %Zd\n", i, j, R[i][j]);
+            mpz_clear(R[i][j]);
         }
-        printf("\n");
+        free(R[i]);
     }
+    free(R);
     return 0;
 }
