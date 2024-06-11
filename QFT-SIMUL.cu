@@ -1,11 +1,13 @@
-#include<stdio.h>
-#include<stdlib.h>
-#include <string.h>
+#include <stdio.h>
+#include <cuda_runtime.h>
+#include <cufft.h>
+#include <cuComplex.h>
+#include <stdlib.h>
+#include <math.h>
+#include <curand_kernel.h>
 #include<stdbool.h>
-#include<math.h>
 #include<time.h>
 #include<complex.h>
-#include <unistd.h>
 
 int mdc(int num1, int num2) {
     int resto;
@@ -18,34 +20,12 @@ int mdc(int num1, int num2) {
 }
 
 int mmc(int num1, int num2) {
-    int resto, a;
+    int a;
     if(num2==0) return num1;
     a = mdc(num1,num2);
     return (num1 * num2) / a;
-    
+
 }
-/*float buscabin(float *Soma, float *P, double m, int tam) {
-    int inicio = 0;
-    int fim = tam - 1;
-
-    while (inicio <= fim) {
-        int meio = (inicio + fim) / 2;
-
-        if (m == Soma[meio])
-            return P[meio];
-
-        if (m < Soma[meio])
-            fim = meio - 1;
-        else
-            inicio = meio + 1;
-    }
-
-    if (fim < 0)
-        return -1;
-    else
-        return P[fim];
-}
-*/
 float buscabin(float *Soma, float *P, double m, int tamSoma) {
     int n = tamSoma;
     if (n == 0) {
@@ -176,58 +156,104 @@ double** Frac(double *L, int *tamL) {
     free(L);
     return F;
 }
-double *Prepara(double N, double x, double *r, double q){
-    int tamN = (int)log2(N);
-    double q1 = 1 << (2 * tamN);  // este é o valor ideal segundo Shor. Não é usado no programa. Serve apenas de referência
-    printf("Valor ideal para q: %.0f\n", q1);
 
-    if(q<N){
-        q=1 << (tamN + 4);
+__global__ void calculateZ(cufftComplex *d_Y, int q, int r) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < q) {
+        d_Y[idx] = make_cuComplex(0.0f, 0.0f);
+    }
+    __syncthreads();
+    int j = 1;
+    while (j <= q) {
+        if (idx == j) {
+            d_Y[j] = make_cuComplex(1.0f, 0.0f);
+        }
+        j += r;
+        __syncthreads();
+    }
+}
+
+__global__ void Quadrado_conjugado(double *d_Z, cufftComplex *d_Y, int q) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < q) {
+        d_Z[idx] = cuCabsf(d_Y[idx]) * cuCabsf(d_Y[idx]);
+    }
+}
+__global__ void normalizeZ(double *d_Z, double sum_Z, int q) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < q) {
+        d_Z[idx] /= sum_Z;
+    }
+}
+__global__ void sumVector(float *input, int size, float *result) {
+    extern __shared__ float sdata[];
+
+    int tid = threadIdx.x;
+    int i = blockIdx.x * blockDim.x + threadIdx.x;
+    sdata[tid] = (i < size) ? input[i] : 0.0f;
+
+    __syncthreads();
+
+    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+        if (tid < s) {
+            sdata[tid] += sdata[tid + s];
+        }
+        __syncthreads();
+    }
+
+    if (tid == 0) {
+        result[blockIdx.x] = sdata[0];
+    }
+}
+
+
+double *Prepara(double N, double x, double *r, double q) {
+    int tamN = (int)log2(N);
+    double q1 = 1 << (2 * tamN);  
+    printf("Valor ideal para q: %.0f\n", q1);
+    if (q < N) {
+        q = 1 << (tamN + 4);
     }
     if (*r == 0) {
         int s = x;
         int i = 1;
         while (s > 1) {
-            s = (int)(s*x)%((int)N);
+            s = (int)(s * x) % ((int)N);
             i++;
         }
         *r = i;
-        printf("Ordem r não informada. Ordem r calculada: %.0f\n", *r);
+        printf("Ordem r nao informada. Ordem r calculada: %.0f\n", *r);
     } else {
         printf("Ordem r informada: %f\n", *r);
     }
-
     printf("Criando Z...\n");
-    double *Z = (double *)malloc(q * sizeof(double));
-    if (Z == NULL) {
-            printf("Erro na alocacao de memoria.");
-            exit(1);
-        }
-    fftw_complex *Y = (fftw_complex *)fftw_malloc(q * sizeof(fftw_complex));
-    // Otimizar essa parte daqui...
-    for (int i = 0; i < q; i++) {
-        Y[i] = 0.0 + 0.0 * I;
-    }
-    int j = 1;
-    int cont = 0;
-    while (j <= q) {
-        Y[j] = 1.0 + 0.0 * I;
-        j += *r;
-        cont++;
-
-    }
-    //Até aqui...
+    double *Z;
+    cudaMallocHost((void **)&Z, q * sizeof(double));
+    // Aloca memória na GPU para Y
+    cufftComplex *d_Y;
+    cudaMalloc((void **)&d_Y, q * sizeof(cufftComplex));
+    // Define o número de threads por bloco e calcula o número de blocos
+    int threadsPerBlock = 256; 
+    int numBlocks = (q + threadsPerBlock - 1) / threadsPerBlock;
+    // Preenche Y
+    calculateZ<<<numBlocks, threadsPerBlock>>>(d_Y, q, (int)(*r));
+    cudaDeviceSynchronize();
+    // Calcula FFT
     printf("Calculando FFT...\n");
-    fftw_plan plan = fftw_plan_dft_1d(q, Y, Y, FFTW_BACKWARD, FFTW_ESTIMATE);
+    cufftHandle plan;
+    cufftPlan1d(&plan, q, CUFFT_C2C, 1);
+    cufftExecC2C(plan, d_Y, d_Y, CUFFT_FORWARD);
+    cufftDestroy(plan);
 
-    fftw_execute(plan);
-
+    // Calcula probabilidades
     printf("Calculando probabilidades...\n");
+    Quadrado_conjugado<<<numBlocks, threadsPerBlock>>>(Z, d_Y, q);
+    cudaDeviceSynchronize();
+
+    // Calcula a soma das probabilidades
     double sum_Z = 0;
     for (int i = 0; i < q; i++) {
-        Z[i] = (double)cabs((creal(Y[i])*creal(Y[i]))+(cimag(Y[i])*cimag(Y[i])));
         sum_Z += Z[i];
-        //printf("%f --- %f + %fi\n", creal(Z[i]), creal(Y[i]), cimag(Y[i]));
     }
     double temp=0;
     for (int i = 0; i < q; i++) {
@@ -236,16 +262,59 @@ double *Prepara(double N, double x, double *r, double q){
     }
     sum_Z = temp;
     printf("Soma das probabilidades: %.20f\nCriando Soma com probabilidade acumulada...\n", sum_Z);
-    
-    fftw_destroy_plan(plan);
-    fftw_free(Y);
-    
+
+
+
+    cudaFree(d_Y);
     return Z;
+}
+/*__global__ void calculateSomaPParallel(float *P, float *Soma, double *Z, double k, double q, int r, curandState *state) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < r) {
+        double pos = idx * k;
+        P[2 * idx] = (float)pos;
+        P[2 * idx + 1] = pos + 1;
+        double total = 0.0;
+        for (int i = 0; i <= pos; i++) {
+            total += Z[i];
+        }
+        // Gerar um número aleatório entre 0 e 100 usando o cuRAND
+        float random_value = curand_uniform(&state[idx]) * 101;
+        Soma[2 * idx] = total;
+        Soma[2 * idx + 1] = total + Z[(int)pos + 1] * random_value;
+    }
+}
+float *Soma_P_Parallel(double r, double q, float *P, float *Soma, double *Z) {
+    double k = (q / r);
+    // Aloca estados do cuRAND
+    int numThreadsPerBlock = 256;
+    int numBlocks = (r + numThreadsPerBlock - 1) / numThreadsPerBlock;
+    curandState *devStates;
+    cudaMalloc((void **)&devStates, numBlocks * numThreadsPerBlock * sizeof(curandState));
+    setupCurand<<<numBlocks, numThreadsPerBlock>>>(devStates, time(0));
+    cudaDeviceSynchronize();
+    // Configuração dos blocos e threads para o kernel
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (r + threadsPerBlock - 1) / threadsPerBlock;
+    // Chama o kernel para calcular Soma_P paralelamente
+    calculateSomaPParallel<<<blocksPerGrid, threadsPerBlock>>>(P, Soma, Z, k, q, r, devStates);
+    cudaDeviceSynchronize();
+    // Libera memória alocada para os estados do cuRAND
+    cudaFree(devStates);
+    return Soma;
+}*/ //Nao sabendo calcular Probabilidade Acumulada (dos picos)
+__global__ void generateRandom(float *randomValues, unsigned int seed) {
+    int tid = blockIdx.x * blockDim.x + threadIdx.x;
+    curandState state;
+    curand_init(seed, tid, 0, &state);
+
+    randomValues[tid] = curand_uniform(&state);
 }
 float *Soma_P (double r, double q, float *P, float *Soma, double *Z){
     double k = (q / r);
     printf("Calculando Somas...\n");
     double total = 0;
+
     for (int i = 0; i <r; i++) {
         double pos = (i * k);
         P[2 * i] = (float)pos;
@@ -255,11 +324,27 @@ float *Soma_P (double r, double q, float *P, float *Soma, double *Z){
         total = total + Z[((int)pos)+1];
         Soma[2*i+1] = total;
     }
-    P[2*(((int)r)-1)]=-1*(int)((random()%101)*q);
-    Soma[2*(((int)r)-1)]=1;
+    int numThreads = 1;
+    int numBlocks = 1;
+    int totalThreads = numThreads * numBlocks;
+
+    float *d_randomValues;
+    float *h_randomValues = (float *)malloc(totalThreads * sizeof(float));
+
+    cudaMalloc((void **)&d_randomValues, totalThreads * sizeof(float));
+
+    generateRandom<<<numBlocks, numThreads>>>(d_randomValues, time(0));
+
+    cudaMemcpy(h_randomValues, d_randomValues, totalThreads * sizeof(float), cudaMemcpyDeviceToHost);
+
+    P[2*(((int)r)-1)] = -1 * (int)(h_randomValues[0] * 101 * q);
+    Soma[2*(((int)r)-1)] = 1;
 
     printf("Probabilidade Acumulada (dos picos): %f\n", total);
-    
+
+    cudaFree(d_randomValues);
+    free(h_randomValues);
+
     return Soma;
 }
 double *Simula(float *Soma,float *P, int tamResult, int tamSoma){
@@ -271,23 +356,35 @@ double *Simula(float *Soma,float *P, int tamResult, int tamSoma){
         printf("Erro na alocacao de memoria.");
         exit(1);
     }
-    for(int i = 0; i<tamResult; i++){
-        result[i]=0;
-    }
-     for(int i = 0; i<tamResult; i++){
-        int random_integer = rand();
+    for(int i = 0; i<tamResult; i++) result[i]=0;
+    int numThreads = 256; 
+    int numBlocks = (tamResult + numThreads - 1) / numThreads;
+    int totalThreads = numThreads * numBlocks;
 
-        // Normaliza o número para estar entre 0 e 1, incluindo valores decimais
-        double m = (double)random_integer / (double)RAND_MAX;
+    float *d_randomValues;
+    float *h_randomValues = (float *)malloc(totalThreads * sizeof(float));
+
+    cudaMalloc((void **)&d_randomValues, totalThreads * sizeof(float));
+
+    generateRandom<<<numBlocks, numThreads>>>(d_randomValues, time(0));
+
+    cudaMemcpy(h_randomValues, d_randomValues, totalThreads * sizeof(float), cudaMemcpyDeviceToHost);
+
+    for(int i = 0; i<tamResult; i++){
+    // Normaliza o número para estar entre 0 e 1, incluindo valores decimais
+        double m = (double)h_randomValues[i];
         result[i] = (double)buscabin(Soma,P,m, tamSoma);
         if (result[i]==0){
             result[i] = 1;
         }
     }
+
+    cudaFree(d_randomValues);
+    free(h_randomValues);
+
     return result;
 }
 float **EstimaOrdem(double r,double *result,double q, double N, int n){
-    int mult = 0;
     float **R;
     int taml = 1;
     R=(float**)malloc(n*sizeof(float*));
@@ -315,13 +412,6 @@ float **EstimaOrdem(double r,double *result,double q, double N, int n){
     }
     return R;
 }
-
-//0 - não é múltiplo e nem divisor da ordem que distinga fator
-// 1 - múltiplo da ordem
-// 2 - distingue fator
-// 4 - mmc múltiplo da ordem (acumulada)
-// 8 - mmc distingue fator
-
 float **EstimaFator(double N, double x,float **R, int tam){
     printf("\nProcura um multiplo da ordem ou um divisor que distiga um fator nao trivial.\n");
     float **Sucesso;
@@ -357,7 +447,7 @@ float **EstimaFator(double N, double x,float **R, int tam){
                 }
             }
             potTotal = potTotal*pot;
-            if(potTotal%((int)N) == 1){
+            if(potTotal%((int)N)==1){
                 sucesso[j]=sucesso[j]+4;
                 printf("\nfatores do múltiplo da ordem %d %d\n",pot,(potTotal/pot));
             }
@@ -376,29 +466,28 @@ float **EstimaFator(double N, double x,float **R, int tam){
 
     return Sucesso;
 }
-int existe(int valor, int *array, int *tamanho) {
-    for (int i = 0; i < *tamanho; i++) {
+int existe(int valor, int *array, int tamanho) {
+    for (int i = 0; i < tamanho; i++) {
         if (array[i] == valor) {
             return 1;  // O valor já existe
         }
     }
     return 0;  // O valor não existe
 }
-int *removerDuplicatas(int *array, int *tamanho) {
-    if (*tamanho <= 1) {
-        return NULL;  // Não há duplicatas para remover
+int removerDuplicatas(int *array, int tamanho) {
+    if (tamanho <= 1) {
+        return tamanho;  // Não há duplicatas para remover
     }
-    int novoTamanho = 0;  // Tamanho do novo array sem duplicatas
-    int *fat = (int*)malloc(sizeof(int)); 
-    for (int i = 1; i < *tamanho; i++) {
-        if (!existe(array[i], array, &novoTamanho)) {
+
+    int novoTamanho = 1;  // Tamanho do novo array sem duplicatas
+    for (int i = 1; i < tamanho; i++) {
+        if (!existe(array[i], array, novoTamanho)) {
+            array[novoTamanho] = array[i];  // Adiciona o elemento único
             novoTamanho++;
-            fat=(int*)realloc(fat,novoTamanho*sizeof(int));
-            fat[novoTamanho-1] = array[i];  // Adiciona o elemento único
         }
     }
-    *tamanho = novoTamanho;
-    return fat;
+
+    return novoTamanho;
 }
 int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fatores) {
     int *fat;
@@ -413,19 +502,15 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
     for (int i = 0; i < num_s; i++) {
         for (int j = 0; j < 3; j++) {
             if (S[i][j] == 1) {
-                printf("testa um divisor da ordem\n");
                 if ((int)R[i][j] % 2 == 0) {
-                    printf("Teste de Shor...\n");
                     int f = mdc((int)(((int)pow(x, (int)(R[i][j] / 2))%(int)N) - 1), (int)N);
                     fat[count++] = f;
                 }
                 if ((int)R[i][j] % 3 == 0) {
-                    printf("Teste com 3...\n");
                     int f = mdc((int)(((int)pow(x, (int)(R[i][j] / 3))%(int)N) - 1), (int)N);
                     fat[count++] = f;
                 }
             } else if (S[i][j] == 2) {
-                printf("aqui...\n");
                 int f = mdc((int)pow(x, (int)R[i][j]) - 1, (int)N);
                 fat[count++] = f;
                 fat[count++] = (int)N / f;
@@ -441,7 +526,6 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
             j++;
         }
     }*/
-    //printf("\ncontador: %d \n",count);
     //printf("\ncontador k: %d \n",k);
     /*if(k>1){
         printf("Aux: [");
@@ -450,22 +534,19 @@ int* Fatores(double N, double x, float **R, float **S, int num_s, int *num_fator
         }
         printf("]\n");
     }*/
-    
-    fat = removerDuplicatas(fat, &count);
-    *num_fatores = count;
-    //free(fat);
+    *num_fatores = removerDuplicatas(fat, count);
     return fat;
 }
-
 int main(){
-    double time_spent = 0.0;
-    clock_t begin = clock();
-    double p1 = 37;
-    double p2 = 41;
+
+    //double time_spent = 0.0;
+    //clock_t begin = clock();
+    double p1 = 31;
+    double p2 = 29;
     double N  = p1 * p2; //N nao precisa ser semi-primo
     double x  = 2;
     double r  = 0;
-    double q  = (int)pow(2, 20);//2**20
+    double q  = (int)pow(2, 24);//2**20
     int n  = 15; // quantidade de valores medidos 
     float *Soma;
     float *P;
@@ -474,40 +555,26 @@ int main(){
     float **S;
     int *fat;
     int tamFat;
-    double *Z; 
-    
+    double *Z;
+    int threadsPerBlock = 256;
+    int numBlocks = ( (int)r+ threadsPerBlock - 1) / threadsPerBlock;
+
     Z = Prepara(N, x, &r, q);
-    
+
+    int r_int = (int)r;
+
+    P = (float *)malloc((2 * (r + 1)) * sizeof(float));
+    Soma = (float *)malloc((2 * r + 1) * sizeof(float));
     tamSoma_P=(2*(r+1));
-    P = (float*)malloc((2*(r+1))*sizeof(float));
-    Soma = (float*)malloc((2*r+1)*sizeof(float));
-    if (P == NULL || Soma == NULL) {
-        printf("Erro na alocacao de memoria.");
+    if (P == NULL || Soma == NULL || Z == NULL) {
+        printf("Erro na alocação de memória.");
         exit(1);
     }
-    for(int i=0;i<(2*(r+1));i++){
-        P[i]=0;
-        Soma[i]=0;
-    }
+
     Soma = Soma_P(r, q, P, Soma, Z);
-    
-    
+
     printf("%.0f", r);
-    
-    
-    /*printf("Soma: [");
-    for(int i=0; i<tamSoma_P;i++){
-        printf("%.0f ", Soma[i]);
-    }
-    printf("]\n");
-    
-    
-    printf("[");
-    for(int i=0; i<tamSoma_P;i++){
-        printf("%.0f ", P[i]);
-    }
-    printf("]\n");*/
-    
+
     double *result;
     result = Simula(Soma, P, n, tamSoma_P);
     printf("\nq= %.0f\n",q);
@@ -529,10 +596,13 @@ int main(){
     }
     printf("]\n");
     free(fat);
-    sleep(2);
-    clock_t end = clock();
-    time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
- 
-    printf("Tempo de execucao: %f segundos\n", time_spent);
+
+    cudaFreeHost(Z);
+    free(P);
+    free(Soma);
+    //clock_t end = clock();
+    //time_spent += (double)(end - begin) / CLOCKS_PER_SEC;
+
+    //printf("\nTempo de execucao: %f segundos\n", time_spent);
     return 0;
 }
