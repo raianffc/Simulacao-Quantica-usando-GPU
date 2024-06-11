@@ -216,3 +216,4 @@ GMP instalada, porém ainda sendo aplicada.
 achamos o erro falta saber consertar...
 ![image](https://github.com/raianffc/Simulacao-Quantica-usando-GPU/assets/54862169/b68cd00f-fbf7-4a5a-b210-2c0c8ca1970d)
 
+teste de tudo!!
