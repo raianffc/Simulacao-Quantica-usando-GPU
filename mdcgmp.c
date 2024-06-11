@@ -5,7 +5,7 @@
 #include<math.h>
 #include<time.h>
 #include<complex.h>
-#include <unistd.h> 
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <gmp.h>
@@ -17,6 +17,7 @@ int mdc(int num1, int num2) {
         num1 = num2;
         num2 = resto;
     } while (resto != 0);
+    print("testando");
     return num1;
 }
 
@@ -25,7 +26,7 @@ int mmc(int num1, int num2) {
     if(num2==0) return num1;
     a = mdc(num1,num2);
     return (num1 * num2) / a;
-    
+
 }mpz_t *FracCont(int *tamL, double x, int q, int N) {
     int tam = 1;
     double x_inic = x;
@@ -218,15 +219,15 @@ int main(){
     unsigned long x  = 2;
     unsigned long r  = 0;
     unsigned long q  = (int)pow(2, 20);//2**20
-    int n  = 15; // quantidade de valores medidos 
+    int n  = 15; // quantidade de valores medidos
     float *Soma;
     float *P;
     int tamSoma_P;
-    unsigned long *Z; 
+    unsigned long *Z;
     mpz_t **R;
     double result [15]= {343700, 774782, 570891, 367001, 93206, 1042750, 425256, 1, 757304, 1042750, 343700, 1042750, 297096, 75730, 413604};
     R = EstimaOrdem(r, result, q, N, n);
-    
+
     for (int i = 0; i < n; i++) {
         for (int j = 0; j < 3; j++) {
             gmp_printf("R[%d][%d]: %Zd\n", i, j, R[i][j]);
