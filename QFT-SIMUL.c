@@ -68,6 +68,7 @@ float buscabin(float *Soma, float *P, double m, int tamSoma) {
         } else {
             return buscabin(&Soma[meio], &P[meio], m, n - meio);
         }
+	    printf("estou aqui testando");
     }
 }
 double* FracCont(double x, double q, double N, int *tamL) {
