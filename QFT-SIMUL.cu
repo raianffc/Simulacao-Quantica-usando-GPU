@@ -5,7 +5,6 @@
 #include<math.h>
 #include<time.h>
 #include<complex.h>
-#include <fftw3.h>
 #include <unistd.h>
 
 int mdc(int num1, int num2) {
