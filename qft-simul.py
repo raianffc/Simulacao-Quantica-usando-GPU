@@ -2,7 +2,7 @@ import random
 from numpy import *
 from numpy.fft import *
 import time
-
+print("testando")
 def buscabin(Soma,P,m):
     n = len(Soma)
     if n==0 :
