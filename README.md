@@ -20,6 +20,9 @@ Sites sobre a biblioteca Complex.h
 
 https://learn.microsoft.com/pt-br/cpp/standard-library/complex?view=msvc-170
 
+Biblioteca GMP 
+https://home.cs.colorado.edu/~srirams/courses/csci2824-spr14/gmpTutorial.html
+
 https://acervolima.com/arquivo-de-cabecalho-complex-h-em-c-com-exemplos/
 
 https://www.geeksforgeeks.org/complex-h-header-file-in-c-with-examples/
