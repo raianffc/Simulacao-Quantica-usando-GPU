@@ -199,7 +199,9 @@ Tempo de execução:
   Para poder compilar seu código, é necessário ter a biblioteca fftw3 instalado e o comando do terminal ficará assim:
   gcc teste.c -o teste -lfftw3 -lgmp -lm 
   Se quiser executar direto: gcc teste.c -o teste -lfftw3 -lgmp -lm -run
-
+  Para compilar no CUDA:
+  nvcc QFT-SIMUL.cu -o QFT -lcufft -lcurand
+  Se quiser executar direto: nvcc teste.cu -o teste -lcufft -lcurand -run
   Saidas diferentes para o calculo da probabilidade em c e python. alem disso resultado das medidas muitos diferentes, porém por ser número aleatório. Dentro do limite
 
   
